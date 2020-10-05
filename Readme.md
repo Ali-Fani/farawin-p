@@ -3,11 +3,11 @@
 	- Front-end:
 	
 	- Back-end:
-		- [] Models
-		- [] Login
-		- [] Register
-		- [] Boards
-			- [] Add
+		- [ ] Models
+		- [ ] Login
+		- [ ] Register
+		- [ ] Boards
+			- [ ] Add
 			- [] Remove
 			- [] View
 			- [] Update
