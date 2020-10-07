@@ -3,16 +3,16 @@ const { updateOne } = require("../utils/db");
 require('dotenv').config();
 
 
-async function jwTokenGen(userid) {
+async function jwTokenGen(user) {
     try {
-        const access_token = jwt.sign({ id: userid }, process.env.SECRET, {
+        const access_token = jwt.sign({ id: user._id,isAdmin:user.isAdmin }, process.env.SECRET, {
             expiresIn: "15min",
         });
-        const refresh_token = jwt.sign({ id: userid }, process.env.SECRET, {
+        const refresh_token = jwt.sign({ id: user._id,isAdmin:user.isAdmin}, process.env.SECRET, {
             expiresIn: "1d",
         });
         const update = await updateOne("users",
-            { _id: userid },
+            { _id: user._id },
             { refresh_token: refresh_token }
         );
         if (update) {

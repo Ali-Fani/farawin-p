@@ -13,9 +13,10 @@ const login = async (req, res) => {
     const password = req.body.password;
     const user = await findOne("users", { username: username });
     if (user) {
-      if (await bcrypt.compare(password, user.password)) {
-        const tokens = await jwTokenGen(user._id);
-        res.cookie("refresh_token", tokens.refresh_token);
+      const match = await bcrypt.compare(password, user.password);
+      if (match) {
+        const tokens = await jwTokenGen(user);
+        res.cookie("refresh_token", tokens.refresh_token,{ expires: new Date(Date.now() + 900000), httpOnly: true });
         res
           .status(202)
           .json({ status: "succes", access_token: tokens.access_token });
@@ -32,13 +33,15 @@ const register = async (req, res) => {
   try {
     const username = req.body.username;
     const password = req.body.password;
-
+    const firstname=req.body.firstname;
+    const lastname=req.body.lastname;
+    const emailaddress=req.body.email
     const exists = await findOne("users", { username: username });
     if (!exists) {
       bcrypt.genSalt(+saltRounds, function (err, salt) {
         bcrypt.hash(password, salt, function (err, hash) {
           if (!err) {
-            insertOne("users", { username: username, password: hash })
+            insertOne("users", { fname:firstname,lname:lastname,email:emailaddress,username: username, password: hash,isAdmin:false })
               .then((resault) => {
                 if (resault.insertedCount) {
                   res.status(201).json({ status: "success" });
@@ -88,8 +91,8 @@ const refresh_token = async (req, res) => {
       res.status(401).json({ success: false, error: "token is not valid" });
       return;
     }
-    const tokens = await jwTokenGen(user._id);
-    res.cookie("refresh_token", tokens.refresh_token);
+    const tokens = await jwTokenGen(user);
+    res.cookie("refresh_token", tokens.refresh_token,{ expires: new Date(Date.now() + 900000), httpOnly: true });
     res
       .status(202)
       .json({ status: "succes", access_token: tokens.access_token });

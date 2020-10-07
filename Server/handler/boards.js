@@ -1,29 +1,19 @@
 require("dotenv").config();
 
-const { ObjectID } = require("mongodb");
-const { findOne, insertOne, findAll, updateOne } = require("../utils/db");
+const { ObjectID, ObjectId } = require("mongodb");
+const { use } = require("../route");
+const { findOne, insertOne, findAll, updateOne, addBoardMember, addBoard,getUserBoards } = require("../utils/db");
 const create_board = async (req, res) => {
   try {
     const name = req.body.name;
     const description = req.body.description;
-    const due_date = req.body.due_date;
-    const type = req.body.type;
     const user = await findOne("users", { _id: ObjectID(req.body.user) });
-    insertOne("boards", {
-      name: name,
-      description: description,
-      type: type,
-      due_date: due_date,
-
-      members: [user._id],
-    })
-      .then((result) => {
-        if (result.insertedCount) {
-          res.status(201).json({ status: "success" });
-          return;
-        }
-      })
-      .catch((err) => console.error(err));
+    const board = await addBoard(name, description, user._id);
+    if(board.insertedCount>0){
+      res.json(board.ops[0])
+      return;
+    }
+    res.status(401).json({status:"failed"})
   } catch (err) {
     console.error(err);
     res.status(400).json({ status: "failure" });
@@ -33,15 +23,14 @@ const create_board = async (req, res) => {
 const list_boards = async (req, res) => {
   try {
     const id = req.params.id;
-    const user = req.headers.user;
+    const user_id = req.headers.user;
     if (!id) {
-      const boards = await findAll("boards", { members: [ObjectID(user)] });
-      res.json(boards);
+      const boards = await getUserBoards(user_id);
+      res.json(boards)
       return;
     }
 
     const boards = await findOne("boards", {
-      members: [ObjectID(user)],
       _id: ObjectID(id),
     });
     if (!boards) {
@@ -83,8 +72,8 @@ const update_boards = async (req, res) => {
 };
 const delete_boards = async (req, res) => {
   try {
-      const {id:board_id,user:user_id}=req.body;
-      res.json({board_id:board_id,user_id:user_id});
-  } catch (err) {}
+    const { id: board_id, user: user_id } = req.body;
+    res.json({ board_id: board_id, user_id: user_id });
+  } catch (err) { }
 };
-module.exports = { create_board, list_boards, update_boards,delete_boards };
+module.exports = { create_board, list_boards, update_boards, delete_boards };
