@@ -1,45 +1,52 @@
 "use strict";
-const e = require("express");
+const { MongoClient } = require("mongodb");
 const uri = "mongodb://127.0.0.1:27017";
-const mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost/test', {useUnifiedTopology: true ,useNewUrlParser: true});
-const db = mongoose.connection;
-db.on('error', console.error.bind(console, 'connection error:'));
-db.once('open', function() {
-  // we're connected!
-});
-const User=require("../models/User")
+const client = new MongoClient(uri, { useUnifiedTopology: true });
+
+let db;
+async function initDB() {
+  try {
+    await client.connect();
+    const newDB = client.db("farawin-p");
+    return newDB;
+    //2: db = client.db("farawin")
+  } catch (err) {
+    console.error(err);
+  }
+}
 
 async function getInstance() {
-    if (!db) {
-        db = await initDB();
-        //2: await initDB()
-    }
-    return db;
+  if (!db) {
+    db = await initDB();
+  }
+  return db;
 }
-async function check_user(username, password) {
-    try {
-        const data=await User.findOne({username:username,password:password})
-        if(data){
-            return data;
-        }
-        else{
-            return;
-        }
-        
-    }
-    catch (err) {
-        console.error(err);
-    }
+async function insertOne(collection, dataToInsert) {
+  const db = await getInstance();
+  const res = await db.collection(collection).insertOne(dataToInsert);
+  return res;
 }
-async function insert(collect, object) {
+async function findOne(collection, condition) {
     const db = await getInstance();
-    const users = db.collection(collect);
-    const resault = await users.insertOne(object);
-    if (!ok) {
-        res.status(500).json({ success: false });
-        return;
-    }
+    const res = await db.collection(collection).findOne(condition);
+    return res;
+  }
+async function updateOne(collection,condition,data){
+    const db=await getInstance();
+    const res=await db.collection(collection).findOneAndUpdate(condition,{$set: data},{returnOriginal:false})
+    console.log(res)
+    return res;
+}
+async function findAll(collection,condition){
+  const db = await getInstance();
+  const res=await db.collection(collection).find(condition).toArray()
+  return res;
 }
 
-module.exports = { getInstance ,check_user};
+async function deleteOne(collection,condition){
+  const db = await getInstance();
+  const res = await db.collection(collection).deleteOne(condition);
+  return res;
+}
+  
+module.exports = { insertOne,findOne,updateOne,findAll };

@@ -1,85 +1,135 @@
 "use strict";
 const jwt = require("jsonwebtoken");
+require("dotenv").config();
+const bcrypt = require("bcrypt");
+const saltRounds = process.env.SALT_ROUNDS;
+const { getInstance, check_user, findOne, insertOne } = require("../utils/db");
+const { jwTokenGen, validateUsername } = require("../utils/utils");
 const { ObjectID } = require("mongodb");
-const { getInstance ,check_user} = require("../utils/db");
-const { check_data } = require("../utils/data-validation");
 
-const login = async (req,res)=>{
-  try{
-      const username=req.body.username;
-      const password=req.body.password;
-      const validate=await check_data(username,password);
-      console.log(validate);
-      if(validate!=true){
-        res.json(validate);
+const login = async (req, res) => {
+  try {
+    const username = req.body.username;
+    const password = req.body.password;
+    const user = await findOne("users", { username: username });
+    if (user) {
+      if (await bcrypt.compare(password, user.password)) {
+        const tokens = await jwTokenGen(user._id);
+        res.cookie("refresh_token", tokens.refresh_token);
+        res
+          .status(202)
+          .json({ status: "succes", access_token: tokens.access_token });
         return;
       }
-      const checked=await check_user(username,password);
-      console.log(checked);
-      if (checked) {
-        res.json(checked);
-      }
-      else{
-        res.status(403).json({error:"username or password is wrong"})
-      }
-  }catch(err){
+    }
+    res.status(403).json({ status: "username or password is wrong" });
+    return;
+  } catch (err) {
     console.error(err);
   }
 };
-const register = async(req,res)=>{
-  try{
-    const username=req.body.username;
-    const password=req.body.password;
-    const validate=await check_data(username,password);
-    console.log(validate);
-    if(validate!=true){
-      res.status(403).json(validate);
+const register = async (req, res) => {
+  try {
+    const username = req.body.username;
+    const password = req.body.password;
+
+    const exists = await findOne("users", { username: username });
+    if (!exists) {
+      bcrypt.genSalt(+saltRounds, function (err, salt) {
+        bcrypt.hash(password, salt, function (err, hash) {
+          if (!err) {
+            insertOne("users", { username: username, password: hash })
+              .then((resault) => {
+                if (resault.insertedCount) {
+                  res.status(201).json({ status: "success" });
+                  return;
+                }
+              })
+              .catch((err) => {
+                res.status(400).json(err);
+                return;
+              });
+          } else {
+            console.error(err);
+            return;
+          }
+        });
+      });
+    } else {
+      res.json({ status: "username already exists" });
       return;
     }
-    const checked = await check_user(username,password);
-    if(checked){
-      res.json(checked)
-    }
-    else{
-      console.log(checked);
-      res.status(403).json({error:"username or password is wrong"})
-    }
-  }catch(err){
+  } catch (err) {
     console.error(err);
   }
-}
-// 
+};
+const check = async (req, res) => {
+  res.json(await findOne("users", { _id: ObjectID(req.body.user) }));
+  return;
+};
+const refresh_token = async (req, res) => {
+  try {
+    const token = req.cookies.refresh_token;
+    if (!token) {
+      console.error("token not found");
+      res.status(401).json({ success: false });
+      return;
+    }
+    const user = await findOne("users", { refresh_token: token });
+    if (!user) {
+      console.error("token is not valid");
+      res.status(401).json({ success: false, error: "token is not valid" });
+      return;
+    }
+
+    const decoded = jwt.verify(token, process.env.SECRET);
+    if (!decoded) {
+      console.error("token is not valid");
+      res.status(401).json({ success: false, error: "token is not valid" });
+      return;
+    }
+    const tokens = await jwTokenGen(user._id);
+    res.cookie("refresh_token", tokens.refresh_token);
+    res
+      .status(202)
+      .json({ status: "succes", access_token: tokens.access_token });
+  } catch (err) {
+    console.error(err);
+    res.json(err);
+  }
+};
+//
 // const login = async (req, res) => {
-  // try {
-    // if (!req.body.username) {
-      // res.status(400).json({ success: false, error: "missing username" });
-      // return;
-    // }
-    // if (req.body.username.length < 3) {
-      // res.status(400).json({ success: false, error: "invalid username" });
-      // return;
-    // }
-    // if (!req.body.pass || req.body.pass.length < 8) {
-      // res.status(400).json({ success: false, error: "invalid pass" });
-      // return;
-    // }
-    // const db = await getInstance();
-    // const users = db.collection("users");
-    // const user = await users.findOne({
-      // username: req.body.username,
-      // pass: req.body.pass,
-    // });
-    // if (!user) {
-      // res.status(403).json({ success: false });
-      // return;
-    // }
-    // const resp = await generateToken(user._id);
-    // res.set("Set-Cookie", `refresh_token=${resp.refresh_token}`)
-    // res.json(resp);
-  // } catch (err) {
-    // console.log(err);
-    // res.status(500).json({ success: false });
-  // }
+// try {
+// if (!req.body.username) {
+// res.status(400).json({ success: false, error: "missing username" });
+// return;
+// }
+// if (req.body.username.length < 3) {
+// res.status(400).json({ success: false, error: "invalid username" });
+// return;
+// }
+// if (!req.body.pass || req.body.pass.length < 8) {
+// res.status(400).json({ success: false, error: "invalid pass" });
+// return;
+// }
+// const db = await getInstance();
+// const users = db.collection("users");
+// const user = await users.findOne({
+// username: req.body.username,
+// pass: req.body.pass,
+// });
+// if (!user) {
+// res.status(403).json({ success: false });
+// return;
+// }
+// const resp = await generateToken(user._id);
+// res.set("Set-Cookie", `refresh_token=${resp.refresh_token}`)
+// res.json(resp);
+// } catch (err) {
+// console.log(err);
+// res.status(500).json({ success: false });
+// }
 // };
 
-module.exports={login,register};
+module.exports = { login, register, check, refresh_token };
