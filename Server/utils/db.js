@@ -1,10 +1,10 @@
 "use strict";
-const { MongoClient, ObjectId } = require("mongodb");
-const { use } = require("../route");
+const {MongoClient, ObjectId, ObjectID} = require("mongodb");
 const uri = "mongodb://127.0.0.1:27017";
-const client = new MongoClient(uri, { useUnifiedTopology: true });
+const client = new MongoClient(uri, {useUnifiedTopology: true,});
 
 let db;
+
 async function initDB() {
     try {
         await client.connect();
@@ -22,54 +22,144 @@ async function getInstance() {
     }
     return db;
 }
+
 async function insertOne(collection, dataToInsert) {
     const db = await getInstance();
     const res = await db.collection(collection).insertOne(dataToInsert);
     return res;
 }
+
 async function findOne(collection, condition) {
     const db = await getInstance();
     const res = await db.collection(collection).findOne(condition);
     return res;
 }
+
 async function updateOne(collection, condition, data) {
     const db = await getInstance();
-    const res = await db.collection(collection).findOneAndUpdate(condition, { $set: data }, { returnOriginal: false })
-    console.log(res)
+    const res = await db
+        .collection(collection)
+        .findOneAndUpdate(condition, {$set: data}, {returnOriginal: false});
+    console.log(res);
     return res;
 }
+
 async function findAll(collection, condition) {
     const db = await getInstance();
-    const res = await db.collection(collection).find(condition).toArray()
+    const res = await db.collection(collection).find().toArray();
     return res;
 }
 
-async function deleteOne(collection, condition) {
+async function getUser(id) {
     const db = await getInstance();
-    const res = await db.collection(collection).deleteOne(condition);
+    const res = await db.collection("users").findOne({_id: ObjectId(id)});
     return res;
 }
-async function getBoardMebers(board) {
-    const db = await getInstance();
-    const res = await db.collection("boardMembers").find({ _id: ObjectId(board) }).toArray()
-    return res;
-}
-async function addBoardMember(board, userid, role) {
-    const db = await getInstance();
-    const res = await db.collection("boardMembers").insertOne({ board_id: board, user_id: userid, role: role })
-    return res;
-}
+
+/**
+ * Creates new Board
+ * @param {String} name Board Name
+ * @param {String} description Board Description
+ * @param {ObjectId} user_id User Id
+ */
 async function addBoard(name, description, user_id) {
     const db = await getInstance();
-    const res = await db.collection("boards").insertOne({ name: name, description: description, members: [{ user_id: ObjectId(user_id), role: "owner" }] })
+    const res = await db.collection("boards").insertOne({
+        name: name,
+        description: description,
+        members: [{user_id: ObjectId(user_id), role: "owner"}],
+    });
     return res;
 }
 
+/**
+ * Returns an array of boards that user is a member of
+ * @param {String} user User ID
+ */
 async function getUserBoards(user) {
-    // db.boards.find({members:[ObjectId("5f7d619ab0f00b2bef3550a4")]})
     const db = await getInstance();
-    const res = await db.collection("boards").find({ members: {$elemMatch: { user_id:ObjectId(user) }} }).toArray()
-    console.log(res)
+    const res = await db
+        .collection("boards")
+        .find({members: {$elemMatch: {user_id: ObjectId(user)}}})
+        .toArray();
     return res;
 }
-module.exports = { insertOne, findOne, updateOne, findAll, addBoardMember, addBoard, getUserBoards };
+
+/**
+ * Returns Specfic Board
+ * @param {String} user User ID
+ * @param {String} board Board ID
+ */
+async function getUserBoard(user, board) {
+    const db = await getInstance();
+    if (!user) {
+        const res = await db.collection("boards").findOne({_id: ObjectId(board)});
+        return res;
+    }
+    const res = await db.collection("boards").findOne({
+        $and: [
+            {members: {$elemMatch: {user_id: ObjectId(user)}}},
+            {_id: ObjectId(board)},
+        ],
+    });
+    return res;
+}
+
+/**
+ * Updates Board if User is Owner or Editor
+ * @param {String} user User ID
+ * @param {String} board Board ID
+ * @param {Object} data Data To Update
+ */
+async function updateBoard(user, board, data) {
+    const db = await getInstance();
+    const res = await db.collection("boards").findOneAndUpdate(
+        {
+            $and: [
+                {_id: ObjectId(board)},
+                {"members.user_id": ObjectId(user)},
+                {"members.role": {$ne: "member"}},
+            ],
+        },
+        {$set: data},
+        {returnOriginal: false}
+    );
+    return res;
+}
+
+async function insertList(name, board_id) {
+
+    const db = await getInstance();
+    const objectid = new ObjectID();
+    const res2 = await db.collection('boards').findOneAndUpdate({_id: ObjectId(board_id)},{$push:{lists:{_id:ObjectId(objectid)}}});
+    if (!res2.lastErrorObject.updatedExisting) {
+        console.error("error in update board");
+        return;
+    }
+    const res = await db.collection('lists').insertOne({
+        _id: ObjectId(objectid),
+        name: name,
+        archived: false,
+        disabled: false,
+        board_id: board_id
+    },)
+    if (!res.result.n) {
+        console.error("error in insertList");
+        return;
+    }
+    return res;
+
+}
+
+module.exports = {
+    insertOne,
+    findOne,
+    updateOne,
+    findAll,
+    addBoard,
+    getUserBoards,
+    getUserBoard,
+    updateBoard,
+    getUser,
+    insertList
+};

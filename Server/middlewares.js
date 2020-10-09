@@ -1,7 +1,22 @@
 require('dotenv').config();
 const jwt = require("jsonwebtoken");
 
+async function validateList(req,res,next){
+    try {
+        if (!req.body.name){
+            res.status(400).json({status: 'Failed',error:"List Name is Missing"})
+            return;
+        }
+        if (!req.body.board_id){
+            res.status(400).json({status: 'Failed',error:"Board Id is Missing"})
+            return;
+        }
+    }catch (e){
+        console.log(e);
+    }
 
+    next()
+}
 const validate=(req,res,next)=>{
     try{
         const {username,password}=req.body;
@@ -29,9 +44,7 @@ const validate=(req,res,next)=>{
     catch(err){
         console.error(err);
     }
-    finally{
-        next();
-    }
+    next();
 }
 const auth=(req,res,next)=>{
     try {
@@ -47,8 +60,9 @@ const auth=(req,res,next)=>{
             req.body.isAdmin=decoded.isAdmin;
         }
         if (req.method == "GET"){
+            console.log(decoded.id)
             req.headers["user"]=decoded.id;
-            req.body.isAdmin=decoded.isAdmin;
+            req.headers["isAdmin"]=decoded.isAdmin;
         }
         
         next()
@@ -58,4 +72,4 @@ const auth=(req,res,next)=>{
     
     }
 }
-module.exports={isValid:validate,isAuth:auth}
+module.exports={isValid:validate,isAuth:auth,listValid:validateList}

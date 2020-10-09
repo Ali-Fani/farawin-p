@@ -2,10 +2,8 @@
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const bcrypt = require("bcrypt");
-const saltRounds = process.env.SALT_ROUNDS;
-const { getInstance, check_user, findOne, insertOne } = require("../utils/db");
-const { jwTokenGen, validateUsername } = require("../utils/utils");
-const { ObjectID } = require("mongodb");
+const { findAll, findOne, insertOne,getUser } = require("../utils/db");
+const { jwTokenGen,genHash } = require("../utils/utils");
 
 const login = async (req, res) => {
   try {
@@ -16,7 +14,10 @@ const login = async (req, res) => {
       const match = await bcrypt.compare(password, user.password);
       if (match) {
         const tokens = await jwTokenGen(user);
-        res.cookie("refresh_token", tokens.refresh_token,{ expires: new Date(Date.now() + 900000), httpOnly: true });
+        res.cookie("refresh_token", tokens.refresh_token, {
+          expires: new Date(Date.now() + 900000),
+          httpOnly: true,
+        });
         res
           .status(202)
           .json({ status: "succes", access_token: tokens.access_token });
@@ -33,15 +34,21 @@ const register = async (req, res) => {
   try {
     const username = req.body.username;
     const password = req.body.password;
-    const firstname=req.body.firstname;
-    const lastname=req.body.lastname;
-    const emailaddress=req.body.email
+    const firstname = req.body.firstname;
+    const lastname = req.body.lastname;
+    const emailaddress = req.body.email;
     const exists = await findOne("users", { username: username });
     if (!exists) {
-      bcrypt.genSalt(+saltRounds, function (err, salt) {
-        bcrypt.hash(password, salt, function (err, hash) {
-          if (!err) {
-            insertOne("users", { fname:firstname,lname:lastname,email:emailaddress,username: username, password: hash,isAdmin:false })
+      const hashed_password=await genHash(password);
+      if(hashed_password){
+        insertOne("users", {
+              fname: firstname,
+              lname: lastname,
+              email: emailaddress,
+              username: username,
+              password: hashed_password,
+              isAdmin: false,
+            })
               .then((resault) => {
                 if (resault.insertedCount) {
                   res.status(201).json({ status: "success" });
@@ -52,12 +59,7 @@ const register = async (req, res) => {
                 res.status(400).json(err);
                 return;
               });
-          } else {
-            console.error(err);
-            return;
-          }
-        });
-      });
+      }
     } else {
       res.json({ status: "username already exists" });
       return;
@@ -67,7 +69,31 @@ const register = async (req, res) => {
   }
 };
 const check = async (req, res) => {
-  res.json(await findOne("users", { _id: ObjectID(req.body.user) }));
+  const user=await getUser(req.body.user)
+  res.json(user);
+  return;
+};
+const getUsers = async (req, res) => {
+  const user_id = req.params.user_id;
+  const isAdmin=req.headers.isAdmin;
+  if(!isAdmin){
+    res.status(403).json({status:"failed",error:"you need admin access for this action"});
+    return;
+  }
+  if (!user_id) {
+    const users = await findAll("users");
+    users.forEach(user => {
+      delete user.password;
+      delete user.refresh_token
+    });
+    console.log(users);
+    res.json(users);
+    return;
+  }
+  const user=await getUser(user_id);
+  delete user.password;
+  delete user.refresh_token;
+  res.json(user);
   return;
 };
 const refresh_token = async (req, res) => {
@@ -85,6 +111,7 @@ const refresh_token = async (req, res) => {
       return;
     }
 
+
     const decoded = jwt.verify(token, process.env.SECRET);
     if (!decoded) {
       console.error("token is not valid");
@@ -92,7 +119,10 @@ const refresh_token = async (req, res) => {
       return;
     }
     const tokens = await jwTokenGen(user);
-    res.cookie("refresh_token", tokens.refresh_token,{ expires: new Date(Date.now() + 900000), httpOnly: true });
+    res.cookie("refresh_token", tokens.refresh_token, {
+      expires: new Date(Date.now() + 900000),
+      httpOnly: true,
+    });
     res
       .status(202)
       .json({ status: "succes", access_token: tokens.access_token });
@@ -135,4 +165,4 @@ const refresh_token = async (req, res) => {
 // }
 // };
 
-module.exports = { login, register, check, refresh_token };
+module.exports = { login, register, check, refresh_token, getUsers };

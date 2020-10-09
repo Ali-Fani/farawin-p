@@ -1,7 +1,8 @@
 const jwt = require("jsonwebtoken");
 const { updateOne } = require("../utils/db");
 require('dotenv').config();
-
+const bcrypt = require("bcrypt");
+const saltRounds = process.env.SALT_ROUNDS;
 
 async function jwTokenGen(user) {
     try {
@@ -40,4 +41,9 @@ const validateUsername = async (username, res) => {
     return;
   }
 };
-module.exports = { jwTokenGen, validateUsername };
+const genHash=async(password)=>{
+  const salt=await bcrypt.genSalt(+saltRounds)
+  const hashed_password=await bcrypt.hash(password,salt)
+  return hashed_password;
+}
+module.exports = { jwTokenGen, validateUsername,genHash };
