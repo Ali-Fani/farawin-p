@@ -75,18 +75,9 @@ const list_boards = async (req, res) => {
 };
 const boards_lists = async(req, res)=>{
   const board_id=req.params.id
-  const user=req.headers.user;
-  const user_board=await getUserBoard(user,board_id)
-  
-  if(user_board){
-    const boards_lists= await getBoardLists(board_id)
-    res.json(boards_lists)
-    return;
-  }
-  res.status(400).json({status: "failure"})
-  return
-  
-  
+  const boards_lists= await getBoardLists(board_id)
+  res.json(boards_lists)
+  return;
 }
 const update_boards = async (req, res) => {
   try {

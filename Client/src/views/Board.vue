@@ -1,12 +1,22 @@
 <template>
-    {{boards}}
+<div id="app">
+  <agile>
+    <div class="slide" v-for="n in 6" :key="n" :class="`slide--${n}`">
+      <h3>Hello World</h3>
+    </div>
+  </agile>
+</div>
 </template>
-
 <script lang="ts">
 import { defineComponent } from 'vue'
 import { get } from '@/utils/http'
+import { VueAgile } from 'vue-agile'
+
 export default defineComponent({
   name: 'Board',
+  components: {
+    agile: VueAgile,
+  },
   data() {
     return {
       boards: null,
@@ -20,3 +30,94 @@ export default defineComponent({
   },
 })
 </script>
+<style lang="css" scoped>
+#app {
+  display: -webkit-box;
+  display: flex;
+  font-family: "Lato", sans-serif;
+  font-weight: 300;
+  margin: 0 auto;
+  max-width: 900px;
+  padding: 30px;
+}
+
+.agile {
+  width: 100%;
+}
+.agile__actions {
+  margin-top: 20px;
+}
+.agile__nav-button {
+  background: transparent;
+  border: none;
+  color: #ccc;
+  cursor: pointer;
+  font-size: 24px;
+  -webkit-transition-duration: 0.3s;
+          transition-duration: 0.3s;
+}
+.agile__nav-button:hover {
+  color: #888;
+}
+.agile__dot {
+  margin: 0 10px;
+}
+.agile__dot button {
+  background-color: #eee;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: block;
+  height: 10px;
+  font-size: 0;
+  line-height: 0;
+  margin: 0;
+  padding: 0;
+  -webkit-transition-duration: 0.3s;
+          transition-duration: 0.3s;
+  width: 10px;
+}
+.agile__dot--current button, .agile__dot:hover button {
+  background-color: #888;
+}
+
+.slide {
+  -webkit-box-align: center;
+          align-items: center;
+  color: #fff;
+  display: -webkit-box;
+  display: flex;
+  height: 300px;
+  -webkit-box-pack: center;
+          justify-content: center;
+}
+.slide h3 {
+  font-size: 32px;
+  font-weight: 300;
+}
+
+.slide--1 {
+  background-color: #f1c40f;
+}
+
+.slide--2 {
+  background-color: #e67e22;
+}
+
+.slide--3 {
+  background-color: #e74c3c;
+}
+
+.slide--4 {
+  background-color: #9b59b6;
+}
+
+.slide--5 {
+  background-color: #3498db;
+}
+
+.slide--6 {
+  background-color: #2ecc71;
+}
+
+</style>

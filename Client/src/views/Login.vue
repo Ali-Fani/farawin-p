@@ -103,6 +103,7 @@ export default defineComponent({
 </script>
 
 <style scoped lang="scss">
+
 .login {
   color: #e8f5fd;
 }
@@ -167,7 +168,7 @@ export default defineComponent({
 
 .secondary-button {
   background: transparent;
-  color: inherit;
+  color:inherit;
 }
 
 .loading {

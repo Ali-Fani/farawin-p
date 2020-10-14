@@ -1,0 +1,113 @@
+<template>
+  <ul id="list" v-on:click= openboard>
+    <li v-for="board in boards" :key="board._id" :id="board._id">
+<div class="card" style="--background:#d2ced6; --text:white;" :id="board._id">
+
+    <div class="container" :id="board._id"><p :id="board._id">{{board.name}}</p><p :id="board._id">{{board.description}}</p></div>
+</div></li></ul>
+</template>
+<script>
+import { defineComponent } from 'vue'
+import { get } from '@/utils/http'
+
+export default defineComponent({
+  name: 'Boards',
+  data() {
+    return {
+      boards: null,
+    }
+  },
+  mounted() {
+    get('/v1/board').then((res) => {
+      console.log(res)
+      this.boards = res
+    })
+  },
+  methods:
+  {
+    openboard: function (event) {
+      const target = event.target.id
+      this.$router.push('/board/' + target)
+    }
+  }
+})
+</script>
+
+<style scoped>
+li{
+  list-style-type: none;
+  padding: 1rem;
+  /* padding: 1rem; */
+}
+ul{
+
+    display: flex;
+  flex-wrap: wrap;
+  padding: 0;
+  /* padding-left: 2rem;
+  padding-right: 2rem; */
+
+}
+body {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  grid-gap: 5rem;
+  padding: 5rem;
+  background: #F5F7FA;
+}
+body .card {
+  --background:#FFFFFF;
+  --text:white;
+  position: relative;
+  width: 8rem;
+  flex-basis: 100%;
+
+  padding: 1rem;
+  height: 7rem;
+  box-shadow: 0 0 2rem -1rem rgba(0, 0, 0, 0.05);
+}
+body .card .multi-button {
+  z-index: 0;
+  position: absolute;
+  top: 1.25rem;
+  /* left: 1.25rem; */
+  border-radius: 100%;
+  width: 0rem;
+  height: 0rem;
+  transform: translate(-50%, -50%);
+  transition: 0.25s cubic-bezier(0.25, 0, 0, 1);
+}
+body .card .multi-button button {
+  display: grid;
+  place-items: center;
+  position: absolute;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  border-radius: 100%;
+  background: var(--background);
+  color: var(--text);
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  transition: 0.25s cubic-bezier(0.25, 0, 0, 1);
+  box-shadow: 0 0 0rem -0.25rem var(--background);
+}
+body .card .multi-button button:hover {
+  background: var(--text);
+  color: var(--background);
+  box-shadow: 0 0 1rem -0.25rem var(--background);
+}
+body .card .container {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  padding: 1rem;
+  border-radius: 1rem;
+  background: var(--background);
+  color: var(--text);
+}
+body .card:hover .multi-button, body .card .multi-button:focus-within {
+  width: 10rem;
+  height: 10rem;
+}
+</style>

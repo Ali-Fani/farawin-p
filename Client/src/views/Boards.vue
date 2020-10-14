@@ -4,25 +4,27 @@
 <p> {{}}</p>
 <b v-on:click= createBoard>+</b>
 </div>
-<div class="boards" v-on:click= openboard v-if=" boards.length < 1 ">
-    <div class="board"  v-for="board in boards" :key="board._id" :id="board._id">
-        <div class="board_name">{{board.name}}</div>
-        <div class="board_desc">{{board.description}}</div>
-    </div>
+<div class="boards" v-on:click= openboard v-if=" boards">
+<div class="grid-container" v-for="board in boards" :key="board._id" :id="board._id">
+  <div class="remove" v-on:click=removeBoard >x</div>
+  <div class="name" >{{board.name}}</div>
+  <div class="description" >{{board.description}}</div>
 </div>
-<div v-else>
+</div>
+<div v-else class="boards">
   <p>no boards found!</p>
 </div>
-<div class="createboard">
+<!-- <div class="createboard">
   <input type="text" placeholder="Board Name">
   <input type="text" placeholder="Board Description">
   <input type="button" value="Create Board" v-on:clicl="createBoard">
-</div>
+</div> -->
 </template>
 
 <script>
 import { defineComponent } from 'vue'
 import { get, post } from '@/utils/http'
+
 export default defineComponent({
   name: 'Boards',
   data() {
@@ -55,19 +57,21 @@ export default defineComponent({
           this.$router.push('/login')
         }
       }
-      console.log(res)
       this.boards = res
     })
-    console.log(this.boards)
   },
   methods:
   {
     openboard: function (event) {
-      const target = event.target.id
+      const target = event.target.parentNode.id
+      console.log(event.target.parentNode.id)
       this.$router.push('/board/' + target)
     },
     createBoard: function (event) {
       console.log(event)
+    },
+    removeBoard: function (event) {
+      console.log(event.target.id)
     }
   }
 })
@@ -78,28 +82,7 @@ export default defineComponent({
 $colorPrimary:#FFFFFF;
 $colorWhite:#fff;
 $colorBlack:#000;
-.body{
-  background-color: #F2F2F2;
-}
-.board{
-display: flex;
-flex-direction: column;
-flex-wrap: nowrap;
-justify-content: flex-start;
-align-items: flex-start;
-background-color: $colorPrimary;
-margin: 1rem;
-border-radius: 12px;
-padding: 1rem;
-}
-.board_name{
-  color: $colorBlack;
-  font-size: 16px;
-}
-.board_desc{
-  color: $colorBlack;
-  opacity: 60%;
-}
+
 .header{
   min-height: 200px;
   display: flex;
@@ -123,4 +106,24 @@ padding: 1rem;
   font-weight: bold;
   cursor: pointer;
 }
+.grid-container {
+  background: $colorPrimary;
+  margin: 1rem;
+  border-radius: 10px;
+  display: grid;
+  min-height: 80px;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 5px 0px;
+  grid-template-areas:
+    "name name remove"
+    "description description remove";
+}
+
+.remove { grid-area: remove;margin: auto auto auto 0.5rem; }
+
+.name { grid-area: name;padding: 0.5rem;}
+
+.description { grid-area: description;padding-right: 0.5rem; }
+
 </style>
