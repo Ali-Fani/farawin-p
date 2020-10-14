@@ -8,6 +8,7 @@ const {
   findAll,
   updateOne,
   addBoardMember,
+  getBoardLists,
   addBoard,
   getUserBoards,
   getUserBoard,
@@ -72,7 +73,21 @@ const list_boards = async (req, res) => {
     return;
   }
 };
-
+const boards_lists = async(req, res)=>{
+  const board_id=req.params.id
+  const user=req.headers.user;
+  const user_board=await getUserBoard(user,board_id)
+  
+  if(user_board){
+    const boards_lists= await getBoardLists(board_id)
+    res.json(boards_lists)
+    return;
+  }
+  res.status(400).json({status: "failure"})
+  return
+  
+  
+}
 const update_boards = async (req, res) => {
   try {
     const board_id = req.body._id;
@@ -97,4 +112,4 @@ const delete_boards = async (req, res) => {
     res.json({ board_id: board_id, user_id: user_id });
   } catch (err) {}
 };
-module.exports = { create_board, list_boards, update_boards, delete_boards };
+module.exports = { create_board, list_boards, update_boards, delete_boards,boards_lists };

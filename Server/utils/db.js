@@ -84,6 +84,11 @@ async function getUserBoards(user) {
         .toArray();
     return res;
 }
+async function getBoardLists(board,user){
+    const db = await getInstance();
+    const res= await db.collection("lists").find({board_id: ObjectId(board)}).toArray()
+    return res;
+}
 
 /**
  * Returns Specfic Board
@@ -141,14 +146,65 @@ async function insertList(name, board_id) {
         name: name,
         archived: false,
         disabled: false,
-        board_id: board_id
+        board_id: ObjectId(board_id)
     },)
-    if (!res.result.n) {
+    if (res.result.n!=1) {
         console.error("error in insertList");
         return;
     }
     return res;
 
+}
+async function editList(list_id,name){
+    const db=await getInstance();
+    const res=await db.collection("lists").findOneAndUpdate({_id: ObjectId(list_id)},{$set:{name:name}});
+    return res;
+}
+async function getLists(){
+    const db = await getInstance();
+    const res=await db.collection("lists").find().toArray();
+    return res;
+}
+async function getonelist(list_id){
+    const db = await getInstance();
+    const res=await db.collection("lists").findOne({_id: ObjectId(list_id)})
+    return res;
+}
+async function removelist(list_id){
+    try {
+        const db = await getInstance();
+        const res= await db.collection("lists").deleteOne({_id: ObjectId(list_id)});
+        return res;
+    }
+    catch (e){
+        console.error(e);
+    }
+
+}
+async function getOneTask(task_id){
+
+    try {
+        const db = await getInstance();
+        if(!task_id){
+            const res=await db.collection("tasks").find().toArray();
+            return res;
+        }
+        const res=await db.collection("tasks").findOne({_id: ObjectId(task_id)})
+        return res;
+    }
+    catch (e){
+        console.error(e)
+    }
+}
+async function addTask(data){
+    try {
+        const db = await getInstance();
+        const res = await db.collection("tasks").insertOne(data);
+        return res;
+    }
+    catch (e){
+        console.error(e);
+    }
 }
 
 module.exports = {
@@ -161,5 +217,12 @@ module.exports = {
     getUserBoard,
     updateBoard,
     getUser,
-    insertList
+    insertList,
+    editList,
+    getLists,
+    getonelist,
+    removelist,
+    getOneTask,
+    addTask,
+    getBoardLists
 };

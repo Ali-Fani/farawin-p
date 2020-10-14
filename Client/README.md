@@ -1,4 +1,4 @@
-# farawin-p
+# farawin-trello
 
 ## Project setup
 ```

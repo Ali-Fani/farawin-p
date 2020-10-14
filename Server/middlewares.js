@@ -57,12 +57,9 @@ const auth=(req,res,next)=>{
         const decoded=jwt.verify(token,process.env.SECRET);
         if(req.method=="POST" || req.method=="PATCH" || req.method=="DELETE"){
             req.body.user=decoded.id;
-            req.body.isAdmin=decoded.isAdmin;
         }
         if (req.method == "GET"){
-            console.log(decoded.id)
             req.headers["user"]=decoded.id;
-            req.headers["isAdmin"]=decoded.isAdmin;
         }
         
         next()

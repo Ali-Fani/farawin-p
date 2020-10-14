@@ -20,7 +20,7 @@ const login = async (req, res) => {
         });
         res
           .status(202)
-          .json({ status: "succes", access_token: tokens.access_token });
+          .json({ status: "succes", access_token: tokens.access_token,refresh_token:tokens.refresh_token });
         return;
       }
     }
@@ -75,11 +75,7 @@ const check = async (req, res) => {
 };
 const getUsers = async (req, res) => {
   const user_id = req.params.user_id;
-  const isAdmin=req.headers.isAdmin;
-  if(!isAdmin){
-    res.status(403).json({status:"failed",error:"you need admin access for this action"});
-    return;
-  }
+
   if (!user_id) {
     const users = await findAll("users");
     users.forEach(user => {
@@ -90,9 +86,14 @@ const getUsers = async (req, res) => {
     res.json(users);
     return;
   }
+
   const user=await getUser(user_id);
   delete user.password;
   delete user.refresh_token;
+  if(!user.isAdmin){
+    res.status(403).json({status:"failed",error:"you need admin access for this action"});
+    return;
+  }
   res.json(user);
   return;
 };
