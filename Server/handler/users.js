@@ -15,7 +15,7 @@ const login = async (req, res) => {
       if (match) {
         const tokens = await jwTokenGen(user);
         res.cookie("refresh_token", tokens.refresh_token, {
-          expires: new Date(Date.now() + 900000),
+          expires: new Date(Date.now() + 9000000),
           httpOnly: true,
         });
         res
@@ -99,7 +99,7 @@ const getUsers = async (req, res) => {
 };
 const refresh_token = async (req, res) => {
   try {
-    const token = req.cookies.refresh_token;
+    const token = req.body.refresh_token;
     if (!token) {
       console.error("token not found");
       res.status(401).json({ success: false });

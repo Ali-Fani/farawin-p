@@ -1,8 +1,6 @@
-import router from '@/router'
-
 export function request(method: 'GET' | 'POST', url: string, data?: any) {
   return new Promise<any>((resolve, reject) => {
-    var currentColor = localStorage.getItem('access_token');
+    const currentColor = localStorage.getItem('access_token')
     const xhr = new XMLHttpRequest()
     xhr.open(method, `/api${url}`)
     xhr.setRequestHeader('Content-Type', 'application/json')
@@ -29,6 +27,9 @@ export function request(method: 'GET' | 'POST', url: string, data?: any) {
     xhr.onerror = reject
     xhr.send(JSON.stringify(data))
   })
+}
+export function login(username: string, password: string) {
+  return request('POST', '/v1/auth/login', { username: username, password: password })
 }
 
 export function post(url: string, data: any) {

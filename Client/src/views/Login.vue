@@ -4,10 +4,10 @@
     <h1 class="title">به بورد فراوین خوش اومدی!</h1>
     <form v-if="mode === 'login'" class="form" @submit.prevent="login()">
       <label class="input-group">
-        <input placeholder="نام کاربری" v-autofocus name="username" v-model="username" class="input" type="text">
+        <input placeholder="نام کاربری" v-autofocus name="username" autocomplete="username" v-model="username" class="input" type="text">
       </label>
       <label class="input-group">
-        <input placeholder="رمز عبور" name="password" autocomplete="current-password" v-model="password" class="input" type="password">
+        <input placeholder="رمز عبور" name="password" autocomplete="password" v-model="password" class="input" type="password">
       </label>
       <button :class="{ 'is-loading': loading }" :disabled="loading" class="submit">
         <fw-loading v-if="loading" class="loading" />
