@@ -4,11 +4,15 @@
 <p> {{}}</p>
 <b v-on:click= createBoard>+</b>
 </div>
-<div class="boards" v-on:click= openboard v-if=" boards">
+<div class="boards" @click.prevent= openboard v-if=" boards">
 <div class="grid-container" v-for="board in boards" :key="board._id" :id="board._id">
-  <div class="remove" :id="board._id"  ><b v-on:click=removeBoard>X</b></div>
-  <div class="name" >{{board.name}}</div>
-  <div class="description" >{{board.description}}</div>
+  <Button type="button" label="Toggle" @click="toggle" aria-haspopup="true" aria-controls="overlay_tmenu" class="menu" >
+<font-awesome-icon icon="ellipsis-v" class="menu" :id="board._id" />
+  </Button>
+<TieredMenu id="overlay_tmenu" ref="menu" :model="items" :popup="true" />
+
+  <div class="name" :id="board._id">{{board.name}}</div>
+  <div class="description"  :id="board._id">{{board.description}}</div>
 </div>
 </div>
 <div v-else class="boards">
@@ -26,13 +30,27 @@
 <script>
 import { defineComponent } from 'vue'
 import { get, post } from '@/utils/http'
+import TieredMenu from 'primevue/tieredmenu'
 
 export default defineComponent({
   name: 'Boards',
   data() {
     return {
       boards: [],
+      items: [
+        {
+          label: 'Edit',
+          icon: 'pi pi-fw pi-pencil'
+        },
+        {
+          label: 'Remove',
+          icon: 'pi pi-fw pi-trash'
+        }
+      ]
     }
+  },
+  components: {
+    TieredMenu
   },
   watch: {
     items: {
@@ -65,15 +83,21 @@ export default defineComponent({
   methods:
   {
     openboard: function (event) {
-      const target = event.target.parentNode.id
-      console.log(event.target.parentNode.id)
-      this.$router.push('/board/' + target)
+      // const target = event.target.parentNode.id
+      console.log(event.target.id)
+      // this.$router.push('/board/' + target)
+    },
+    toggle: function (event) {
+      this.$refs.menu.toggle(event)
     },
     createBoard: function (event) {
       console.log(event)
     },
     removeBoard: function (event) {
       console.log(event.target.id)
+    },
+    editboard: function (event) {
+      console.log(event.currenttarget)
     }
   }
 })
@@ -125,6 +149,7 @@ $colorBlack:#000;
     "description description remove";
 }
 
+.menu{ grid-area: remove;margin: auto auto auto 0.5rem;border: 0; background: $colorWhite; }
 .remove { grid-area: remove;margin: auto auto auto 0.5rem; }
 
 .name { grid-area: name;padding: 0.5rem;}
