@@ -64,7 +64,7 @@ const auth=(req,res,next)=>{
         
         next()
     } catch (err) {
-        res.status(403).json({ success: false, error: "middle ware erro" });
+        res.status(401).json({status: "failed",error:"access token is required"});
         return;
     
     }

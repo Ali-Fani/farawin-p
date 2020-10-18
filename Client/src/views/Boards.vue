@@ -6,13 +6,15 @@
 </div>
 <div class="boards" v-on:click= openboard v-if=" boards">
 <div class="grid-container" v-for="board in boards" :key="board._id" :id="board._id">
-  <div class="remove" v-on:click=removeBoard >x</div>
+  <div class="remove" :id="board._id"  ><b v-on:click=removeBoard>X</b></div>
   <div class="name" >{{board.name}}</div>
   <div class="description" >{{board.description}}</div>
 </div>
 </div>
 <div v-else class="boards">
   <p>no boards found!</p>
+</div>
+<div class="newBoard">
 </div>
 <!-- <div class="createboard">
   <input type="text" placeholder="Board Name">
@@ -42,7 +44,7 @@ export default defineComponent({
   },
   mounted() {
     get('/v1/board').then((res) => {
-      if (res.error === 'middle ware erro') {
+      if (res.error === 'access token is required') {
         try {
           post('/v1/auth/refresh-token', {
             // eslint-disable-next-line @typescript-eslint/camelcase
@@ -104,6 +106,9 @@ $colorBlack:#000;
   margin-left: 1rem;
   color: $colorWhite;
   font-weight: bold;
+  cursor: pointer;
+}
+.boards{
   cursor: pointer;
 }
 .grid-container {

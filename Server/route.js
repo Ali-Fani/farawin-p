@@ -27,6 +27,7 @@ router.post("/list",isAuth,listValid,list.createList);
 router.patch("/list/:id",isAuth,list.updateList);
 router.get("/list/:id?",isAuth,list.showLists);
 router.delete("/list",isAuth,list.deleteList);
+router.get("/list/:id/tasks",isAuth,list.getListTasks)
 
 router.get("/task",isAuth,task.getTasks);
 router.post("/task",isAuth,task.newTask);
