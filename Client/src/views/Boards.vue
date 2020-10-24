@@ -1,24 +1,21 @@
 <template>
 <div class="header">
 <p>تخته ها</p>
-<p> {{}}</p>
 <b v-on:click= createBoard>+</b>
 </div>
-<div class="boards" @click.prevent= openboard v-if=" boards">
-<div class="grid-container" v-for="board in boards" :key="board._id" :id="board._id">
-  <Button type="button" label="Toggle" @click="toggle" aria-haspopup="true" aria-controls="overlay_tmenu" class="menu" >
-<font-awesome-icon icon="ellipsis-v" class="menu" :id="board._id" />
-  </Button>
-<TieredMenu id="overlay_tmenu" ref="menu" :model="items" :popup="true" />
-
-  <div class="name" :id="board._id">{{board.name}}</div>
-  <div class="description"  :id="board._id">{{board.description}}</div>
+<div class="boards" v-on:click= openboard v-if="boards">
+<div class="grid-container" v-for="(board,index) in boards" :key="board._id" :id="index" v-on:click= openboard >
+<p class="remove" v-on:click.stop=deleteboard :id="index">حذف</p>
+  <div class="name" :id="index">{{board.name}}</div>
+  <div class="description"  :id="index">{{board.description}}</div>
 </div>
 </div>
 <div v-else class="boards">
   <p>no boards found!</p>
 </div>
 <div class="newBoard">
+  <input type="text" name="name">
+  <input type="text" name="description">
 </div>
 <!-- <div class="createboard">
   <input type="text" placeholder="Board Name">
@@ -29,8 +26,7 @@
 
 <script>
 import { defineComponent } from 'vue'
-import { get, post } from '@/utils/http'
-import TieredMenu from 'primevue/tieredmenu'
+import { get, post, del } from '@/utils/http'
 
 export default defineComponent({
   name: 'Boards',
@@ -39,19 +35,29 @@ export default defineComponent({
       boards: [],
       items: [
         {
-          label: 'Edit',
+          label: 'ویرایش',
           icon: 'pi pi-fw pi-pencil'
         },
         {
-          label: 'Remove',
-          icon: 'pi pi-fw pi-trash'
+          label: 'حذف',
+          icon: 'pi pi-fw pi-trash',
+          command: (event) => {
+            this.display = !this.display
+            const id = event.originalEvent
+            console.log(id)
+            // del('/v1/board', {
+            //   id: id
+            // }).then((res) => {
+            //   console.log(res)
+            // })
+            // event.originalEvent: Browser event
+            // event.item: Menuitem instance
+          }
         }
       ]
     }
   },
-  components: {
-    TieredMenu
-  },
+
   watch: {
     items: {
       handler: function () {
@@ -83,9 +89,9 @@ export default defineComponent({
   methods:
   {
     openboard: function (event) {
-      // const target = event.target.parentNode.id
+      const target = this.boards[event.target.id]._id
       console.log(event.target.id)
-      // this.$router.push('/board/' + target)
+      this.$router.push('/board/' + target)
     },
     toggle: function (event) {
       this.$refs.menu.toggle(event)
@@ -93,8 +99,36 @@ export default defineComponent({
     createBoard: function (event) {
       console.log(event)
     },
-    removeBoard: function (event) {
-      console.log(event.target.id)
+    deleteboard: function (event) {
+      // console.log(this.boards[event.target.id]._id)
+      const id = this.boards[event.target.id]._id
+      del('/v1/board', {
+        id: id
+      }).then((res) => {
+        if (res.deletedCount) {
+          this.boards = this.boards.filter(function (obj) {
+            return obj.id !== id
+          })
+          get('/v1/board').then((res) => {
+            if (res.error === 'access token is required') {
+              try {
+                post('/v1/auth/refresh-token', {
+                  // eslint-disable-next-line @typescript-eslint/camelcase
+                  refresh_token: localStorage.getItem('refresh_token')
+                }).then((res) => {
+                  if (res.refresh_token) {
+                    localStorage.setItem('refresh_token', res.refresh_token)
+                  }
+                  this.$router.push('/login')
+                })
+              } catch (error) {
+                this.$router.push('/login')
+              }
+            }
+            this.boards = res
+          })
+        }
+      })
     },
     editboard: function (event) {
       console.log(event.currenttarget)
@@ -132,9 +166,6 @@ $colorBlack:#000;
   font-weight: bold;
   cursor: pointer;
 }
-.boards{
-  cursor: pointer;
-}
 .grid-container {
   background: $colorPrimary;
   margin: 1rem;
@@ -150,7 +181,7 @@ $colorBlack:#000;
 }
 
 .menu{ grid-area: remove;margin: auto auto auto 0.5rem;border: 0; background: $colorWhite; }
-.remove { grid-area: remove;margin: auto auto auto 0.5rem; }
+.remove { grid-area: remove;margin: auto auto auto 0.5rem; cursor: pointer; }
 
 .name { grid-area: name;padding: 0.5rem;}
 

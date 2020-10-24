@@ -14,6 +14,7 @@ const {
   getUserBoard,
   updateBoard,
   getUser,
+  deleteBoard
 } = require("../utils/db");
 const create_board = async (req, res) => {
   try {
@@ -99,8 +100,15 @@ const update_boards = async (req, res) => {
 };
 const delete_boards = async (req, res) => {
   try {
-    const { id: board_id, user: user_id } = req.body;
-    res.json({ board_id: board_id, user_id: user_id });
-  } catch (err) {}
+    const board_id = req.body.id;
+    if (!board_id){
+      res.status(400).json({status: "failure"})
+    }
+    const resp=await deleteBoard(board_id)
+    res.json(resp);
+    return
+  } catch (err) {
+    console.error(err)
+  }
 };
 module.exports = { create_board, list_boards, update_boards, delete_boards,boards_lists };

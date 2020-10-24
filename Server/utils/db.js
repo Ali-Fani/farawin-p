@@ -211,6 +211,18 @@ async function addTask(data){
         console.error(e);
     }
 }
+async function deleteBoard(data) {
+    try {
+        const db = await getInstance();
+        const res = await db.collection("boards").deleteOne({_id: ObjectId(data)})
+        return res;
+    }
+    catch (e)
+    {
+        console.error(e)
+    }
+    
+}
 
 module.exports = {
     insertOne,
@@ -230,5 +242,6 @@ module.exports = {
     getOneTask,
     addTask,
     getBoardLists,
-    getListsTasks
+    getListsTasks,
+    deleteBoard
 };

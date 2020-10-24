@@ -12,6 +12,7 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 const app = createApp(App)
 
 app.use(router)
+
 library.add(faUserSecret)
 library.add(faEllipsisV)
 
