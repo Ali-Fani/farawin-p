@@ -1,4 +1,4 @@
-const { insertList,editList,getLists,getonelist,removelist,getListsTasks }=require('../utils/db')
+const { insertList,editList,getLists,getonelist,removelist,getListssTasks,getOneTask }=require('../utils/db')
 const createList=async (req,res) => {
     const name=req.body.name;
     const board_id=req.body.board_id;
@@ -45,6 +45,14 @@ const showLists=async(req, res) =>{
         res.status(400).json({status:"failed"})
         return;
     }
+    for (let i in lists)
+        {
+
+            const tasks=await getListssTasks(lists[i]._id);
+            lists[i]['tasks']=tasks
+            console.log(lists[i])
+        }
+
     res.json(lists);
     return;
 }
@@ -72,7 +80,7 @@ const getListTasks= async (req, res) => {
         )
         return;
     }
-    const tasks=await getListsTasks(id);
+    const tasks=await getListssTasks(id);
     if (tasks) {
         res.json(tasks)
         return;

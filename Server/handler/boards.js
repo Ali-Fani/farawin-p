@@ -14,11 +14,17 @@ const {
   getUserBoard,
   updateBoard,
   getUser,
-  deleteBoard
+  deleteBoard,
+  getListssTasks
 } = require("../utils/db");
 const create_board = async (req, res) => {
   try {
     const name = req.body.name;
+    console.log(name)
+    if(!name || name.length<3)
+    {
+      res.status(401).json({status: "failure",error: "board name is required"})
+    }
     const description = req.body.description;
     const user = await findOne("users", { _id: ObjectID(req.body.user) });
     const board = await addBoard(name, description, user._id);
@@ -26,10 +32,10 @@ const create_board = async (req, res) => {
       res.json(board.ops[0]);
       return;
     }
-    res.status(401).json({ status: "failed" });
+    res.status(401).json({ status: "failure" });
   } catch (err) {
     console.error(err);
-    res.status(400).json({ status: "failure" });
+    res.status(401).json({ status: "failure" });
     return;
   }
 };
@@ -56,6 +62,7 @@ const list_boards = async (req, res) => {
     }
     const boards = await getUserBoard(id);
     res.statusMessage ="Updated"
+
     res.json(boards);
     return;
 
@@ -77,6 +84,12 @@ const list_boards = async (req, res) => {
 const boards_lists = async(req, res)=>{
   const board_id=req.params.id
   const boards_lists= await getBoardLists(board_id)
+  for (let i in boards_lists)
+  {
+      const tasks=await getListssTasks(boards_lists[i]._id);
+      boards_lists[i]['tasks']=tasks
+      console.log(boards_lists[i])
+  }
   res.json(boards_lists)
   return;
 }

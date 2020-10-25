@@ -8,11 +8,11 @@ import 'primevue/resources/primevue.min.css'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faUserSecret, faEllipsisV } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import ToastService from 'primevue/toastservice'
 
 const app = createApp(App)
-
 app.use(router)
-
+app.use(ToastService)
 library.add(faUserSecret)
 library.add(faEllipsisV)
 

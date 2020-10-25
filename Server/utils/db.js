@@ -165,7 +165,7 @@ async function getLists(){
     const res=await db.collection("lists").find().toArray();
     return res;
 }
-async function getListsTasks(listid){
+async function getListssTasks(listid){
     const db = await getInstance();
     const res = await db.collection("tasks").find({idList:ObjectId(listid)}).toArray();
     return res;
@@ -242,6 +242,6 @@ module.exports = {
     getOneTask,
     addTask,
     getBoardLists,
-    getListsTasks,
+    getListssTasks,
     deleteBoard
 };

@@ -4,3 +4,5 @@ declare module '*.vue' {
   export default component
 }
 declare module '@splidejs/vue-splide';
+declare module 'vue-carousel';
+declare module 'vue3-carousel'

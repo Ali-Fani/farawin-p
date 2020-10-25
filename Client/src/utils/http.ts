@@ -40,5 +40,5 @@ export function get(url: string) {
   return request('GET', url)
 }
 export function del(url: string, data: any) {
-  return request('DELETE',url,data)
+  return request('DELETE', url, data)
 }

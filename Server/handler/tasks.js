@@ -4,6 +4,7 @@ const getTasks = async (req,res) => {
     try{
         const id=req.params.id;
         const response=await getOneTask(id);
+        console.log(response)
         res.json(response);
         return;
     }
