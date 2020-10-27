@@ -99,6 +99,7 @@ async function getUserBoard(user, board) {
     const db = await getInstance();
     if (!user) {
         const res = await db.collection("boards").findOne({_id: ObjectId(board)});
+        
         return res;
     }
     const res = await db.collection("boards").findOne({

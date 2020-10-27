@@ -66,3 +66,81 @@
   text-align: center;
 }
 </style>
+
+
+
+<template>
+    <div class="list">
+        <div class="list__cbd480e93a1842edab5dbd72d1f4b6fd"></div>
+        <div class="list__5cbf521845be463f92d9348c9fd6c956">Doing</div>
+        <div class="list__icon-/-options">
+            <div class="list__area"></div>
+            <div class="list__options"></div>
+        </div>
+        <div class="list__1fe60eacb9974faba03869716499ccd4">
+            <div class="list__ecf17cda5ec84bcda82b397a61884f85"></div>
+            <div class="list__57536dfae04a4bbd9f709913ef9227a9">Add Card</div>
+            <div class="list__icon-/-plus">
+                <div class="list__area"></div>
+            </div>
+        </div>
+    </div>
+</template>
+
+<script>
+export default {};
+</script>
+
+<style lang="scss">
+.list {
+    &__cbd480e93a1842edab5dbd72d1f4b6fd {
+        width: 311px;
+        border-radius: 12px;
+        background: $colorWhite;
+    }
+
+    &__5cbf521845be463f92d9348c9fd6c956 {
+        font-family: Objectivity;
+        font-size: 20px;
+        line-height: (22 / 20);
+        font-weight: 700;
+        color: $colorBlack;
+    }
+
+    &__icon-/-options {
+    }
+
+    &__area {
+        width: 24px;
+        background: $colorBlack;
+    }
+
+    &__options {
+    }
+
+    &__1fe60eacb9974faba03869716499ccd4 {
+    }
+
+    &__ecf17cda5ec84bcda82b397a61884f85 {
+        width: 287px;
+        border-radius: 8px;
+        background: #f2f2f2;
+    }
+
+    &__57536dfae04a4bbd9f709913ef9227a9 {
+        font-family: Objectivity;
+        font-size: 16px;
+        line-height: (22 / 16);
+        font-weight: 500;
+        color: $colorBlack;
+    }
+
+    &__icon-/-plus {
+    }
+
+    &__area {
+        width: 18px;
+        background: $colorBlack;
+    }
+}
+</style>

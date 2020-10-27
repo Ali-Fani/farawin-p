@@ -58,6 +58,9 @@ export default defineComponent({
       },
     },
   },
+  beforeCreate: function () {
+    document.body.className = 'login'
+  },
   methods: {
     login() {
       this.loading = true
@@ -103,7 +106,6 @@ export default defineComponent({
 </script>
 
 <style scoped lang="scss">
-
 .login {
   color: #e8f5fd;
 }

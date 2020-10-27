@@ -1,5 +1,4 @@
 <template>
-
 <div class="header">
 <p>تخته ها</p>
 
@@ -7,7 +6,8 @@
 <Dialog header="Header" v-model:visible="display" :modal="true" :dismissableMask="true" :rtl="true" :closable="true">
   <Toast position="bottom-right" />
 <template #header>ایجاد بورد جدید</template>
- <div class="createBoard">    <InputText type="text" v-model="name" placeholder="نام بورد" />
+ <div class="createBoard">
+   <InputText type="text" v-model="name" placeholder="نام بورد" />
  <label v-if="missingname" class="validationmessage">{{validationmessage}}</label>
     <Textarea v-model="description" :autoResize="true" rows="5" cols="30" placeholder="توضیحات بورد" />
 
@@ -35,7 +35,7 @@
 
 <script>
 import { defineComponent } from 'vue'
-import { get, post, del } from '@/utils/http'
+import { get, post, del, refreshToken } from '@/utils/http'
 import modal from '@/components/Modal'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
@@ -106,6 +106,7 @@ export default defineComponent({
     }
   },
   mounted() {
+    setInterval(refreshToken, 300000)
     get('/v1/board').then((res) => {
       if (res.error === 'access token is required') {
         try {
@@ -124,6 +125,9 @@ export default defineComponent({
       }
       this.boards = res
     })
+  },
+  beforeCreate: function () {
+    document.body.className = 'boards'
   },
   methods:
   {

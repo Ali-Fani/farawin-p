@@ -7,6 +7,12 @@ body {
   box-sizing: border-box;
   background: #63bef2;
 }
+body.login {
+  background: #63bef2;
+}
+body.board {
+  background: #F2F2F2;
+}
 
 *, *:before, *:after {
   box-sizing: inherit;

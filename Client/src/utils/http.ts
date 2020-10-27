@@ -28,8 +28,31 @@ export function request(method: 'GET' | 'POST' | 'DELETE', url: string, data?: a
     xhr.send(JSON.stringify(data))
   })
 }
-export function login(username: string, password: string) {
-  return request('POST', '/v1/auth/login', { username: username, password: password })
+export function refreshToken() {
+  // post('/v1/auth/refresh-token', {
+  //   // eslint-disable-next-line @typescript-eslint/camelcase
+  //   refresh_token: localStorage.getItem('refresh_token')
+  // }).then((res) => {
+  //   if (res.refresh_token) {
+  //     localStorage.setItem('refresh_token', res.refresh_token)
+  //     return 1;
+  //   }
+  //   return 0;
+  // })
+  request('POST', '/v1/auth/refresh-token', {
+    // eslint-disable-next-line @typescript-eslint/camelcase
+    refresh_token: localStorage.getItem('refresh_token')
+  }).then((res) => {
+    console.log(res.status)
+    if (res.status === 'succes') {
+      localStorage.setItem('refresh_token', res.refresh_token)
+      localStorage.setItem('access_token', res.access_token)
+      return
+    }
+    console.log('hellow')
+  }).catch((e) => {
+    console.error(e)
+  })
 }
 
 export function post(url: string, data: any) {

@@ -99,7 +99,9 @@ const getUsers = async (req, res) => {
 };
 const refresh_token = async (req, res) => {
   try {
+    console.log("hello")
     const token = req.body.refresh_token;
+    
     if (!token) {
       console.error("token not found");
       res.status(401).json({ success: false });
@@ -120,13 +122,9 @@ const refresh_token = async (req, res) => {
       return;
     }
     const tokens = await jwTokenGen(user);
-    res.cookie("refresh_token", tokens.refresh_token, {
-      expires: new Date(Date.now() + 900000),
-      httpOnly: true,
-    });
     res
       .status(202)
-      .json({ status: "succes", access_token: tokens.access_token });
+      .json({ status: "succes", access_token: tokens.access_token, refresh_token: tokens.refresh_token });
   } catch (err) {
     console.error(err);
     res.json(err);

@@ -60,7 +60,7 @@ const list_boards = async (req, res) => {
       res.json(boards);
       return;
     }
-    const boards = await getUserBoard(id);
+    const boards = await getUserBoard(null,id);
     res.statusMessage ="Updated"
 
     res.json(boards);
