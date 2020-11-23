@@ -1,8 +1,6 @@
 <template>
-<div class="header">{{board.name}}
-<p>{{board.description}}</p>
-
-<div v-if="gotdata" class="boardmembers"><p v-if="board.members.lenght > 1">شما و {{board.members.length}} نفر دیگر در این بورد مشترک هستید</p><p v-else>شما تنها عضو این بورد هستید</p></div>
+<div class="header">{{board.boardName}}
+<p>{{board.boardDesc}}</p>
 <!-- <p v-if="board.members > 1">شما و چند نفر دیگر در این بورد مشترک هستید</p> -->
 <div class="dialogModal">
   <Dialog header="Header" v-model:visible="modalAdd" :modal="true" :dismissableMask="true" :rtl="true" :closable="true">
@@ -35,7 +33,7 @@
       <div class="newList" v-if="!list._id">
         <button class="createList" @click.stop="createList">ایجاد لیست جدید</button>
       </div>
-      <p class="listname">{{list.name}}</p>
+      <p class="listname">{{list.listName}}</p>
       <div class="todos" :value=list._id>
               <p v-for="task in list.tasks" :key="task._id" v-on:click.stop="openEdit(task)">
                 {{task.name}}
@@ -132,12 +130,12 @@ export default defineComponent({
     createNewList() {
       if (this.board) {
         console.log(this.board._id)
-        post('/v1/list', {
-          name: this.listname,
+        post('/v2/list', {
+          listName: this.listname,
           // eslint-disable-next-line @typescript-eslint/camelcase
-          board_id: this.board._id
+          boardId: this.board._id
         }).then((res) => {
-          if (res.insertedCount === 1) {
+          if (res.status === 'success') {
             this.getlisttasks()
             this.modalAddList = false
           }
@@ -145,12 +143,12 @@ export default defineComponent({
       }
     },
     getlisttasks() {
-      get(`/v1/board/${this.$route.params.id}/lists`).then((res) => {
-        if (res.error === 'access token is required') {
+      get(`/v2/board/${this.$route.params.id}/lists`).then((res) => {
+        if (res.message === 'authorization token not found' || res.message === 'authorization token not valid') {
           try {
-            post('/v1/auth/refresh-token', {
+            post('/v2/refreshToken', {
             // eslint-disable-next-line @typescript-eslint/camelcase
-              refresh_token: localStorage.getItem('refresh_token')
+              rToken: localStorage.getItem('refresh_token')
             }).then((res) => {
               if (res.refresh_token) {
                 localStorage.setItem('refresh_token', res.refresh_token)
@@ -162,15 +160,17 @@ export default defineComponent({
             this.$router.push('/login')
           }
         }
-        res.push({ test: 'wow' })
-        this.lists = res
+        console.log(res)
+        res.message.push({ place: 'holder' })
+        this.lists = res.message
       })
     },
     createBoard(event: any) {
-      post('/v1/task', {
-        name: this.name,
-        desc: this.description,
-        idList: this.listId
+      post('/v2/cards', {
+        cardName: this.name,
+        cardDescription: this.description,
+        listId: this.listId,
+        boardId: this.board._id
       }).then((res) => {
         console.log(res)
         this.getlisttasks()
@@ -184,7 +184,7 @@ export default defineComponent({
   },
   async mounted() {
     setInterval(refreshToken, 300000)
-    await get(`/v1/board/${this.$route.params.id}`).then((res) => {
+    await get(`/v2/board/${this.$route.params.id}`).then((res) => {
       if (res.status === 'failure') {
         console.error(res.error)
       }
@@ -192,12 +192,12 @@ export default defineComponent({
       this.board = res
     })
 
-    await get(`/v1/board/${this.$route.params.id}/lists`).then((res) => {
-      if (res.error === 'access token is required') {
+    await get(`/v2/board/${this.$route.params.id}/lists`).then((res) => {
+      if (res.message === 'authorization token not found' || res.message === 'authorization token not valid') {
         try {
-          post('/v1/auth/refresh-token', {
+          post('/v2/refreshToken', {
             // eslint-disable-next-line @typescript-eslint/camelcase
-            refresh_token: localStorage.getItem('refresh_token')
+            rToken: localStorage.getItem('refresh_token')
           }).then((res) => {
             if (res.refresh_token) {
               localStorage.setItem('refresh_token', res.refresh_token)
@@ -209,8 +209,9 @@ export default defineComponent({
           this.$router.push('/login')
         }
       }
-      res.push({ test: 'wow' })
-      this.lists = res
+      console.log(res)
+      res.message.push({ place: 'holder' })
+      this.lists = res.message
     })
 
     this.gotdata = true

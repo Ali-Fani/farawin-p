@@ -18,8 +18,8 @@
 <div class="boards" v-on:click= openboard v-if="boards">
 <div class="grid-container" v-for="(board,index) in boards" :key="board._id" :id="index" v-on:click= openboard >
 <p class="remove" v-on:click.stop=deleteboard :id="index">حذف</p>
-  <div class="name" :id="index">{{board.name}}</div>
-  <div class="description"  :id="index">{{board.description}}</div>
+  <div class="name" :id="index">{{board.boardName}}</div>
+  <div class="description"  :id="index">{{board.boardDesc}}</div>
 </div>
 </div>
 <div v-else class="boards">
@@ -107,8 +107,9 @@ export default defineComponent({
   },
   mounted() {
     setInterval(refreshToken, 300000)
-    get('/v1/board').then((res) => {
-      if (res.error === 'access token is required') {
+    get('/v2/board').then((res) => {
+      if (res.message === 'authorization token not found' || res.message === 'authorization token not valid') {
+        console.log(res.message)
         try {
           post('/v1/auth/refresh-token', {
             // eslint-disable-next-line @typescript-eslint/camelcase
@@ -117,6 +118,7 @@ export default defineComponent({
             if (res.refresh_token) {
               localStorage.setItem('refresh_token', res.refresh_token)
             }
+            console.log(res)
             this.$router.push('/login')
           })
         } catch (error) {
@@ -158,17 +160,16 @@ export default defineComponent({
         this.$toast.add({ severity: 'error', summary: 'خطا', detail: 'نام بورد را وارد کنید!', life: 3000, baseZIndex: 2 })
         return
       }
-      post('/v1/board', {
-        name: this.name,
-        description: this.description,
-        type: 'private'
+      post('/v2/board', {
+        boardName: this.name,
+        boardDesc: this.description,
       }).then((res) => {
         if (res.status === 'failure') {
           console.error(res.error)
         }
         this.display = false
-        get('/v1/board').then((res) => {
-          if (res.error === 'access token is required') {
+        get('/v2/board').then((res) => {
+          if (res.message === 'authorization token not found' || res.message === 'authorization token not valid') {
             try {
               post('/v1/auth/refresh-token', {
                 // eslint-disable-next-line @typescript-eslint/camelcase
@@ -192,15 +193,17 @@ export default defineComponent({
     deleteboard: function (event) {
       // console.log(this.boards[event.target.id]._id)
       const id = this.boards[event.target.id]._id
-      del('/v1/board', {
-        id: id
+      del('/v2/board', {
+        boardId: id
       }).then((res) => {
-        if (res.deletedCount) {
+        if (res.status === 'success') {
           this.boards = this.boards.filter(function (obj) {
+            console.log(obj)
             return obj.id !== id
           })
-          get('/v1/board').then((res) => {
-            if (res.error === 'access token is required') {
+          get('/v2/board').then((res) => {
+            if (res.message === 'authorization token not found' || res.message === 'authorization token not valid') {
+              console.log('wiooooooooooooo')
               try {
                 post('/v1/auth/refresh-token', {
                   // eslint-disable-next-line @typescript-eslint/camelcase

@@ -5,7 +5,9 @@ export function request(method: 'GET' | 'POST' | 'DELETE', url: string, data?: a
     xhr.open(method, `/api${url}`)
     xhr.setRequestHeader('Content-Type', 'application/json')
     if (currentColor != null) {
-      xhr.setRequestHeader('access_token', currentColor)
+      currentColor.replace(/\s/g, '')
+      console.error(`Bearer ${currentColor}`)
+      xhr.setRequestHeader('Authorization', `Bearer ${currentColor}`)
     }
     xhr.onload = async () => {
       try {
@@ -39,14 +41,15 @@ export function refreshToken() {
   //   }
   //   return 0;
   // })
-  request('POST', '/v1/auth/refresh-token', {
+  console.log(localStorage.getItem('refresh_token'))
+  request('POST', '/v2/refreshToken', {
     // eslint-disable-next-line @typescript-eslint/camelcase
-    refresh_token: localStorage.getItem('refresh_token')
+    rToken: localStorage.getItem('refresh_token')
   }).then((res) => {
     console.log(res.status)
-    if (res.status === 'succes') {
-      localStorage.setItem('refresh_token', res.refresh_token)
-      localStorage.setItem('access_token', res.access_token)
+    if (res.status === 'success') {
+      localStorage.setItem('refresh_token', res.rToken)
+      localStorage.setItem('access_token', res.aToken)
       return
     }
     console.log('hellow')

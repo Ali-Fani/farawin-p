@@ -41,6 +41,7 @@ const createCard = async (req, res) => {
         const newCard = new Card({
             boardId:req.body.boardId,
             listId:req.body.listId,
+            cardDescription:req.body.cardDescription,
             cardName:req.body.cardName
         })
         newCard.save().then((doc) => {
@@ -49,7 +50,7 @@ const createCard = async (req, res) => {
             //     userId:req.headers.userId
             // })
             // newCardMember.save()
-            return res.status(403).json(error(0,doc))
+            return res.status(201).json(error(0,doc))
         
         })
         

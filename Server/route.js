@@ -9,10 +9,11 @@ const {validBoardId} = require("./Middlewares/input")
 router.post('/login',User.userLogin)
 router.post('/register',User.userRegister)
 router.get('/user',isAuth,User.checkUser)
+router.post('/refreshToken',User.refreshToken)
 
 
-router.post('/board',isAuth,Board.createBoard)
-router.get('/board',isAuth,Board.getUserBoards)
+router.post('/board',[isAuth,validBoardId('boardId')],Board.createBoard)
+router.get('/board/:boardId?',isAuth,Board.getUserBoards)
 router.put('/board',[isAuth,validBoardId('boardId')],Board.editUserBoard)
 router.delete('/board',[isAuth,validBoardId('boardId')],Board.deleteBoard)
 

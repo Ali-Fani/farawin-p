@@ -1,6 +1,9 @@
 const Board = require("../Models/Board");
 const error = require("../utils/error");
 const BoardMember = require("../Models/BoardMember");
+const List = require("../models/List");
+
+const Card = require("../Models/Card");
 var ObjectId = require("mongoose").Types.ObjectId;
 const mainRoles=["owner","editor"];
 const createBoard = async (req, res) => {
@@ -25,7 +28,9 @@ const createBoard = async (req, res) => {
 };
 
 
+
 const getUserBoards = async (req, res) => {
+  if(!req.params.boardId){
   if (req.headers.isAdmin) {
     const all = await Board.find();
     return res.json(all);
@@ -33,6 +38,7 @@ const getUserBoards = async (req, res) => {
     const userBoardMembers = await BoardMember.find({
       userId: req.headers.userId,
     });
+    console.log(userBoardMembers)
     var ids = userBoardMembers.map((doc) => {
       return doc.boardId;
     });
@@ -51,6 +57,15 @@ const getUserBoards = async (req, res) => {
     console.log(userBoards)
     return res.status(201).json(userBoards);
   }
+}const checkIfBoardMember=await BoardMember.find({
+  userId:req.headers.userId,
+  boardId:req.params.boardId
+})
+if(!checkIfBoardMember){
+  return res.status(403).json(error(1,"you dont have permission to edit this board!"));
+}
+const board=await Board.findById(req.params.boardId)
+return res.status(201).json(board);
 };
 
 

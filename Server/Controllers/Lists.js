@@ -2,6 +2,7 @@ const User = require("../Models/User");
 const List=require("../models/List")
 const BoardMember = require("../Models/BoardMember");
 const mainRoles=["owner","editor"];
+const Card = require("../Models/Card");
 var ObjectId = require("mongoose").Types.ObjectId;
 const error = require("../utils/error");
 
@@ -27,12 +28,18 @@ const createList = async (req, res) => {
 
 const readBoardLists = async (req, res) => {
     const boardId=req.params.boardId;
-    const checkAuth=await BoardMember.findOne({boardId:boardId,userId:req.headers.userId})
+    const checkAuth= await BoardMember.findOne({boardId:boardId,userId:req.headers.userId})
     if(!checkAuth){
         return res.status(403).json(error(1,"you are not a member of this board"))
     }
     const boardLists=await List.find({boardId:boardId})
-    return res.status(201).json(error(0,boardLists.length <1 ? "no list for this board" : boardLists))
+    const listTasks= boardLists.map(item=>{
+         Card.find({listId:item._id}).then(doc=>{
+            console.log(doc)
+         })
+        
+    })
+    return res.status(201).json(error(0,boardLists.length <1 ? [{}] : boardLists))
 }
 
 const updateBoardList = async (req, res) => {
