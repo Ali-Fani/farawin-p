@@ -105,7 +105,7 @@ const updateCardData = async (req,res) => {
             return res.status(403).json(error(1,"cardName is missing"))
         }
         cardData.cardName=req.body.cardName;
-        if(req.body.cardDesc){cardData.cardDescription=req.body.cardDesc}
+        if(req.body.cardDescription){cardData.cardDescription=req.body.cardDesc}
         cardData.save().then(doc => {return res.status(201).json(error(0,cardData))})
         
     }
@@ -123,13 +123,11 @@ const deleteCard = async (req,res) => {
         if(!validateBoardMember(cardData.boardId,req.headers.userId,false,res)){
             return res.status(403).json(error(1,"user dont have access to this board"))
         }
-        const cardMemberData=await CardMember.findOne({cardId:cardData._id,userId:req.headers.userId})
-        if(!cardMemberData)
-        {
-            return res.status(403).json(error(1,"you dont have access to this card"))
-        }
+        // const cardMemberData=await CardMember.findOne({cardId:cardData._id,userId:req.headers.userId})
         cardData.remove().then(doc1=>{
-            cardMemberData.remove().then(doc2=>{return res.status(201).json(error(0,doc1))})
+            // cardMemberData.remove().then(doc2=>{return res.status(201).json(error(0,doc1))})
+            CardMember.remove({cardId:cardData._id})
+            return res.status(201).json(error(0,doc1))
         })
         
     }
@@ -154,9 +152,9 @@ const addCardMember = async (req,res) => {
         cardId:cardData._id,
         userId:req.body.userId
     })
-    newCardMember.save().then((err,doc)=>{
+    newCardMember.save().then((doc,err)=>{
         if(!err){return res.status(201).json(error(0,doc))}else{
-            console.log("yani chi nina :|")
+            console.log(err)
             return res.status(403).json(error(1,err))
         }
         

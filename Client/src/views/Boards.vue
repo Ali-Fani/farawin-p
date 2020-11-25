@@ -164,6 +164,7 @@ export default defineComponent({
         boardName: this.name,
         boardDesc: this.description,
       }).then((res) => {
+        console.log(res)
         if (res.status === 'failure') {
           console.error(res.error)
         }

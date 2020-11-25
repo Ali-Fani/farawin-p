@@ -4,8 +4,10 @@ const error = require("../utils/error");
 var jwt = require("jsonwebtoken");
 require("dotenv").config();
 const saltRounds = process.env.SALT_ROUNDS;
+
+
 const checkLogin = async (req, res) => {
-    console.log(req.body)
+    return res.status(200).json({status:"ok"});
 }
 const userLogin = async (req, res) => {
   try {
@@ -117,4 +119,4 @@ const checkUser = async (req, res) => {
   return res.status(200).json(req.headers.userId)
 };
 
-module.exports = { userRegister, userLogin,checkUser ,refreshToken };
+module.exports = { userRegister, userLogin,checkUser ,refreshToken ,checkLogin};

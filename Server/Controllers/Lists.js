@@ -32,14 +32,14 @@ const readBoardLists = async (req, res) => {
     if(!checkAuth){
         return res.status(403).json(error(1,"you are not a member of this board"))
     }
-    const boardLists=await List.find({boardId:boardId})
-    const listTasks= boardLists.map(item=>{
-         Card.find({listId:item._id}).then(doc=>{
-            console.log(doc)
+    const boardLists=await List.find({boardId:boardId}).lean()
+    const listTasks=await Promise.all( boardLists.map(async item=>{
+         return await Card.find({listId:item._id}).then(doc=>{
+            item.cards=doc
+            return item
          })
-        
-    })
-    return res.status(201).json(error(0,boardLists.length <1 ? [{}] : boardLists))
+    }))
+    return res.status(201).json(error(0,boardLists.length <1 ? [] : listTasks))
 }
 
 const updateBoardList = async (req, res) => {

@@ -2,6 +2,7 @@ const Board = require("../Models/Board");
 const error = require("../utils/error");
 const BoardMember = require("../Models/BoardMember");
 const List = require("../models/List");
+const User = require("../Models/User")
 
 const Card = require("../Models/Card");
 var ObjectId = require("mongoose").Types.ObjectId;
@@ -102,7 +103,8 @@ const deleteBoard = async (req, res) => {
     const userId=req.headers.userId;
 
 
-        const boardMember=await BoardMember.find({boardId:boardId,userId:userId});
+        const boardMember=await BoardMember.findOne({boardId:boardId,userId:userId});
+        console.log(boardMember)
         if(!boardMember || boardMember.userRole != "owner"){
             return res.status(403).json(error(1,"insufficient permission"));
         }
@@ -143,8 +145,13 @@ const addBoardMember = async (req, res) => {
 }
 const getBoardMembers = async (req, res) => {
     const boardId=req.params.boardId;
-    const bMemebers= await BoardMember.find({boardId:boardId});
-    return res.status(201).json(bMemebers)
+    const bMemebers= await BoardMember.find({boardId:boardId}).lean();
+    const boardMembers = await Promise.all(bMemebers.map( async member => {
+      return await User.findById(member.userId).then(doc => {
+        member['userName']=doc.username 
+        return member})
+    }))
+    return res.status(201).json(boardMembers)
 }
 const deleteBoardMember = async (req,res) => {
     let boardMember=await BoardMember.findById(req.body.boardMemberId)

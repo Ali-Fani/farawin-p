@@ -2,7 +2,7 @@ import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 import Login from './views/Login.vue'
 import Boards from '@/views/Boards.vue'
 import Board from '@/views/Board.vue'
-
+import { get } from '@/utils/http'
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',

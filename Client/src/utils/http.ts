@@ -1,4 +1,4 @@
-export function request(method: 'GET' | 'POST' | 'DELETE', url: string, data?: any) {
+export function request(method: 'GET' | 'POST' | 'DELETE' | 'PUT', url: string, data?: any) {
   return new Promise<any>((resolve, reject) => {
     const currentColor = localStorage.getItem('access_token')
     const xhr = new XMLHttpRequest()
@@ -65,6 +65,9 @@ export function post(url: string, data: any) {
 export function get(url: string) {
   return request('GET', url)
 }
-export function del(url: string, data: any) {
+export function del(url: string, data: any = {}) {
   return request('DELETE', url, data)
+}
+export function put(url: string, data: any) {
+  return request('PUT', url, data)
 }
