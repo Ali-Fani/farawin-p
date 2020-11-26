@@ -195,4 +195,17 @@ const readCardMembers = async (req,res) => {
 
 }
 
-module.exports = {createCard,readListCards,readCardData,updateCardData,deleteCard,addCardMember,deleteCardMember,readCardMembers}
+const readUserCards = async (req, res) => {
+    if(req.params.userId){
+        var cardMembers=await CardMember.find({userId:req.params.userId})
+    }else{
+        var cardMembers=await CardMember.find({userId:req.headers.userId})
+    }
+    
+    const userCards=await Promise.all(cardMembers.map(async cardmember=>{
+        return await Card.findById(cardmember.cardId)
+    }))
+    return res.json(userCards)
+}
+
+module.exports = {createCard,readListCards,readCardData,updateCardData,deleteCard,addCardMember,deleteCardMember,readCardMembers,readUserCards}

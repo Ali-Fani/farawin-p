@@ -11,6 +11,7 @@ router.post('/register',User.userRegister)
 router.get('/user',isAuth,User.checkUser)
 router.post('/refreshToken',User.refreshToken)
 router.get('/check',isAuth,User.checkLogin)
+router.get('/members/:userId?/cards',[isAuth],Cards.readUserCards)
 
 
 router.post('/board',[isAuth],Board.createBoard)

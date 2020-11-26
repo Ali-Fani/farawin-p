@@ -6,7 +6,7 @@ require('dotenv').config();
 app.use(require("body-parser").json());
 app.use(require("cookie-parser")());
 app.use('/api/v2', require("./route"));
-console.log("app listen on 8090");
+console.log("app listen on 8091");
 //Set up mongoose connection
 mongoose.connect(mongoDB, { useNewUrlParser: true , useUnifiedTopology: true});
 var db = mongoose.connection;

@@ -4,10 +4,17 @@ const error = require("../utils/error");
 var jwt = require("jsonwebtoken");
 require("dotenv").config();
 const saltRounds = process.env.SALT_ROUNDS;
-
+function ValidateEmail(mail) 
+{
+ if (/^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/.test(mail))
+  {
+    return (true)
+  }
+    return (false)
+}
 
 const checkLogin = async (req, res) => {
-    return res.status(200).json({status:"ok"});
+    return res.status(200).json({status:"ok",userId:req.headers.userId});
 }
 const userLogin = async (req, res) => {
   try {
@@ -50,13 +57,22 @@ const userLogin = async (req, res) => {
 };
 
 const userRegister = async (req, res) => {
-  const salt = await bcrypt.genSalt(+saltRounds); //Genrates random salt
-  const hash = bcrypt.hashSync(req.body.password, salt);
-  User.findOne({ email: req.body.email }).then((user) => {
+  if(!ValidateEmail(req.body.email)){
+    return res.status(403).json(error(1, "email is invalid"));
+  }
+
+  User.findOne({ email: req.body.email }).then(async (user) => {
+
     if (user) {
+      console.log(user.username)
+      if(user.username==req.body.username){
+        return res.status(403).json(error(1, "user with this username exists"));
+      }
       res.status(403).json(error(1, "user with this email exists"));
       return;
     } else {
+      const salt = await bcrypt.genSalt(+saltRounds); //Genrates random salt
+      const hash = bcrypt.hashSync(req.body.password, salt);
       let msg = new User({
         username: req.body.username,
         email: req.body.email,
