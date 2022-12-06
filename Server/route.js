@@ -1,35 +1,39 @@
-const router = require("express").Router();
-const user = require("./handler/users");
-const board = require("./handler/boards");
-const list=require("./handler/lists")
-const task=require("./handler/tasks")
-const {isValid,isAuth,listValid}=require("./middlewares");
+const router= require("express").Router();
+const User=require("./Controllers/Users");
+const Board=require("./Controllers/Boards")
+const List=require("./Controllers/Lists")
+const Cards=require("./Controllers/Cards")
+const {isAuth} = require("./Middlewares/auth")
+const {validBoardId} = require("./Middlewares/input")
 
-//user
-router.post(
-  "/auth/login",
-  isValid,
-  user.login
-);
-router.post("/auth/register",isValid, user.register);
-router.post("/auth/refresh-token", user.refresh_token);
-router.post("/auth/check",isAuth, user.check);
-router.get("/auth/users/:user_id?",isAuth,user.getUsers)
+router.post('/login',User.userLogin)
+router.post('/register',User.userRegister)
+router.get('/user',isAuth,User.checkUser)
+router.post('/refreshToken',User.refreshToken)
+router.get('/check',isAuth,User.checkLogin)
+router.get('/members/:userId?/cards',[isAuth],Cards.readUserCards)
 
-//board
-router.post("/board", isAuth, board.create_board);
-router.get("/board/:id?", isAuth, board.list_boards);
-router.get("/board/:id/lists", isAuth, board.boards_lists);
-router.patch("/board", isAuth, board.update_boards);
-router.delete("/board", isAuth, board.delete_boards);
 
-router.post("/list",isAuth,listValid,list.createList);
-router.patch("/list/:id",isAuth,list.updateList);
-router.get("/list/:id?",isAuth,list.showLists);
-router.delete("/list",isAuth,list.deleteList);
-router.get("/list/:id/tasks",isAuth,list.getListTasks)
+router.post('/board',[isAuth],Board.createBoard)
+router.get('/board/:boardId?',isAuth,Board.getUserBoards)
+router.put('/board',[isAuth,validBoardId('boardId')],Board.editUserBoard)
+router.delete('/board',[isAuth,validBoardId('boardId')],Board.deleteBoard)
 
-router.get("/task",isAuth,task.getTasks);
-router.post("/task",isAuth,task.newTask);
-// router.patch("")
+router.post("/board/members",[isAuth,validBoardId('boardId'),validBoardId('userId')],Board.addBoardMember)
+router.get("/board/:boardId/members",[isAuth,validBoardId('boardId')],Board.getBoardMembers)
+router.delete("/board/members",[isAuth,validBoardId('boardMemberId')],Board.deleteBoardMember)
+
+router.post("/list",[isAuth,validBoardId('boardId')],List.createList)
+router.get("/board/:boardId/lists",[isAuth,validBoardId('boardId')],List.readBoardLists)
+router.put("/list",[isAuth,validBoardId('listId')],List.updateBoardList)
+router.delete("/list",[isAuth,validBoardId('listId')],List.deleteBoardList)
+router.get("/list/:listId/cards",[isAuth,validBoardId('listId')],Cards.readListCards)
+
+router.post("/cards",[isAuth,validBoardId('boardId'),validBoardId("listId")],Cards.createCard)
+router.get("/cards/:cardId",[isAuth,validBoardId('cardId')],Cards.readCardData)
+router.put("/cards/:cardId",[isAuth,validBoardId('cardId')],Cards.updateCardData)
+router.delete("/cards/:cardId",[isAuth,validBoardId('cardId')],Cards.deleteCard)
+router.post("/cards/:cardId/idMembers",[isAuth,validBoardId('cardId'),validBoardId('userId'),],Cards.addCardMember)
+router.get("/cards/:cardId/idMembers",[isAuth,validBoardId('cardId')],Cards.readCardMembers)
+router.delete("/cards/:cardId/idMembers",[isAuth,validBoardId('cardId'),validBoardId('userId')],Cards.deleteCardMember)
 module.exports = router;

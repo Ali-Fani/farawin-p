@@ -1,29 +1,74 @@
 <template>
-<div class="header">{{board.name}}
-<p>{{board.description}}</p>
-
-<div v-if="gotdata" class="boardmembers"><p v-if="board.members.lenght > 1">شما و {{board.members.length}} نفر دیگر در این بورد مشترک هستید</p><p v-else>شما تنها عضو این بورد هستید</p></div>
+<div class="header"><p @click.stop="openBoardEdit">{{board.boardName}}</p>
+<p>{{board.boardDesc}}</p>
 <!-- <p v-if="board.members > 1">شما و چند نفر دیگر در این بورد مشترک هستید</p> -->
 <div class="dialogModal">
-  <Dialog header="Header" v-model:visible="modalAdd" :modal="true" :dismissableMask="true" :rtl="true" :closable="true">
-<template #header>ایجاد کارت جدید</template>
- <div class="createBoardc">    <InputText type="text" v-model="name" placeholder="نام کارت" />
+  <Dialog header="Header" v-model:visible="modalAddList" :modal="true" :dismissableMask="true" :rtl="true" :closable="true">
+<template #header>ایجاد لیست جدید</template>
+ <div class="createBoardc">    <InputText type="text" v-model="listname" placeholder="نام کارت" />
  <label v-if="missingname" class="validationmessage">{{validationmessage}}</label>
-    <Textarea v-model="description" :autoResize="true" rows="5" cols="30" placeholder="توضیحات کارت" />
+    <Textarea v-model="listdesc" :autoResize="true" rows="5" cols="30" placeholder="توضیحات کارت" />
 
-    <Button label="ایجاد کارت" v-on:click.stop="createBoard" />
+    <Button label="ایجاد کارت" v-on:click.stop="createNewList" />
+</div>
+</Dialog>
+</div>
+<div class="dialogModal">
+  <Dialog header="Header" v-model:visible="modalEditList" :modal="true" :dismissableMask="true" :rtl="true" :closable="true">
+<template #header>ویرایش لیست</template>
+ <div class="createBoard"> <p class="name">نام</p> <InputText type="text" class="name" v-model="listname" placeholder="نام لیست" />
+ <label v-if="missingname" class="validationmessage">{{validationmessage}}</label>
+    <Button label="حذف" class="remove" v-on:click.stop="removeList" />
+    <Button label="ذخیره" class="save" v-on:click.stop="editList" />
 </div>
 </Dialog>
 
 </div>
-<div class="dialogModal">
-  <Dialog header="Header" v-model:visible="modalAddList" :modal="true" :dismissableMask="true" :rtl="true" :closable="true">
-<template #header>ایجاد لیست جدید</template>
- <div class="createBoard">    <InputText type="text" v-model="listname" placeholder="نام لیست" />
+<!-- edit list -->
+<!-- <div class="dialogModal">
+  <Dialog header="Header" v-model:visible="modalEditList" :modal="true" :dismissableMask="true" :rtl="true" :closable="true">
+<template #header>ویرایش لیست</template>
+ <div class="createBoardc">    <InputText type="text" v-model="listname" placeholder="نام کارت" />
  <label v-if="missingname" class="validationmessage">{{validationmessage}}</label>
-    <Textarea v-model="listdesc" :autoResize="true" rows="5" cols="30" placeholder="توضیحات لیست" />
+    <Button label="ذخیره" v-on:click.stop="editList" />
+</div>
+</Dialog>
+</div> -->
+<!-- edit board-->
+<div class="dialogModal">
+  <Dialog header="Header" v-model:visible="modalEditBoard" :modal="true" :dismissableMask="true" :rtl="true" :closable="true">
+<template #header>ویرایش بورد</template>
+ <div class="createBoard"> <p class="name">نام</p> <InputText type="text" class="name" v-model="board.boardName" placeholder="نام لیست" />
+ <label v-if="missingname" class="validationmessage">{{validationmessage}}</label>
+    <Textarea v-model="board.boardDesc" class="desc" :autoResize="true" rows="5" cols="30" placeholder="توضیحات لیست" />
+    <Button label="حذف" class="remove" v-on:click.stop="removeBoard" />
+    <Button label="ذخیره" class="save" v-on:click.stop="updateBoard" />
+</div>
+</Dialog>
 
-    <Button label="ایجاد لیست" v-on:click.stop="createNewList" />
+</div>
+<!-- end edit board-->
+<div class="dialogModal">
+  <Dialog header="Header" v-model:visible="modalEdit" :modal="true" :dismissableMask="true" :rtl="true" :closable="true">
+<template #header>جزییات تسک</template>
+ <div class="createBoard"> <p class="name">نام</p> <InputText type="text" class="name" v-model="cardData.cardName" placeholder="نام لیست" />
+ <!-- <Dropdown v-model="selectedUser" :options="boardMembers" optionLabel="userName" placeholder="Select a City" /> -->
+ <label v-if="missingname" class="validationmessage">{{validationmessage}}</label>
+    <Textarea v-model="cardData.cardDescription" class="desc" :autoResize="true" rows="5" cols="30" placeholder="توضیحات لیست" />
+    <Button label="حذف" class="remove" v-on:click.stop="removeCard" />
+    <Button label="ذخیره" class="save" v-on:click.stop="updateCard" />
+</div>
+</Dialog>
+
+</div>
+<!-- add card -->
+<div class="dialogModal">
+  <Dialog header="Header" v-model:visible="modalAddCard" :modal="true" :dismissableMask="true" :rtl="true" :closable="true">
+<template #header>افزودن تسک</template>
+ <div class="createBoard"> <p class="name">نام</p> <InputText type="text" class="name" v-model="cardData.cardName" placeholder="نام لیست" />
+ <label v-if="missingname" class="validationmessage">{{validationmessage}}</label>
+    <Textarea v-model="cardData.cardDescription" class="desc" :autoResize="true" rows="5" cols="30" placeholder="توضیحات لیست" />
+    <Button label="ذخیره" class="save" v-on:click.stop="createCard" />
 </div>
 </Dialog>
 
@@ -35,10 +80,10 @@
       <div class="newList" v-if="!list._id">
         <button class="createList" @click.stop="createList">ایجاد لیست جدید</button>
       </div>
-      <p class="listname">{{list.name}}</p>
+      <p class="listname" :id="list._id" @click.stop="openmodalEditList">{{list.listName}}</p>
       <div class="todos" :value=list._id>
-              <p v-for="task in list.tasks" :key="task._id" v-on:click.stop="openEdit(task)">
-                {{task.name}}
+              <p v-for="task in list.cards" :key="task._id" v-on:click.stop="openEdit" :id="task._id">
+                {{task.cardName}}
               </p>
 
       </div>
@@ -53,17 +98,19 @@
 </template>
 <script lang="ts">
 import { defineComponent } from 'vue'
-import { get, post, refreshToken } from '@/utils/http'
+import { get, post, refreshToken, put, del } from '@/utils/http'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
 import Button from 'primevue/button'
+// import Dropdown from 'primevue/dropdown'
 // import Card from 'primevue/card'
 export default defineComponent({
   name: 'Board',
   components: {
     // 'vue-scroll': vuescroll
-    // Card
+    // Card,
+    // Dropdown,
     Dialog,
     InputText,
     Textarea,
@@ -71,19 +118,24 @@ export default defineComponent({
   },
   data() {
     return {
-      lists: null,
-      modalAdd: false,
+      lists: [],
+      selectedUser: null,
       modalEdit: false,
-      board: { _id: '' },
+      modalEditBoard: false,
+      modalEditList: false,
+      modalAddCard: false,
+      board: { _id: '', boardName: '', boardDesc: '', cards: [] },
       gotdata: false,
       activeSlide: 0,
       name: '',
       description: '',
+      listIndex: '',
       listId: '',
       listname: '',
-      listdesc: '',
       boardid: '',
+      boardMembers: '',
       modalAddList: false,
+      cardData: { _id: '', cardName: '', cardDescription: '' },
     }
   },
   watch: {
@@ -94,7 +146,7 @@ export default defineComponent({
     },
     modalAdd: {
       handler: function () {
-        if (!this.modalAdd) {
+        if (!this.modalAddCard) {
           this.listId = ''
         }
       }
@@ -112,14 +164,50 @@ export default defineComponent({
   },
   methods: {
     openAdd(event: any) {
-      this.modalAdd = true
+      this.modalAddCard = true
       this.listId = event.currentTarget.id
     },
-    openEdit(task: any) {
-      console.log(task._id)
+    openBoardEdit(event: any) {
+      this.modalEditBoard = true
+      console.log(event.currentTarget)
+    },
+    removeBoard() {
+      del('/v2/board', { boardId: this.board._id }).then((res) => {
+        if (res.status === 'success') {
+          this.modalEditBoard = false
+          this.$router.push('/login')
+        }
+      })
+    },
+    updateBoard() {
+      if (this.board.boardName !== '') {
+        put('/v2/board', { boardId: this.board._id, boardName: this.board.boardName, boardDesc: this.board.boardDesc }).then((res) => { this.modalEditBoard = false })
+      }
+    },
+    openEdit(event: any) {
+      console.log(event.currentTarget.id)
+      get(`/v2/cards/${event.currentTarget.id}`).then((res) => {
+        this.cardData = res.message
+        this.modalEdit = true
+      })
+      this.modalEdit = true
+    },
+    openmodalEditList(event: any) {
+      this.listname = event.currentTarget.innerText
+      this.listId = event.currentTarget.id
+      this.modalEditList = true
+    },
+    editList() {
+      if (this.listname !== '') {
+        put('/v2/list', { listId: this.listId, listName: this.listname }).then(res => {
+          console.log(res)
+          this.getlisttasks()
+          this.modalEditList = false
+        })
+      }
     },
     closeAdd() {
-      this.modalAdd = false
+      this.modalAddCard = false
       this.name = ''
       this.description = ''
     },
@@ -132,25 +220,40 @@ export default defineComponent({
     createNewList() {
       if (this.board) {
         console.log(this.board._id)
-        post('/v1/list', {
-          name: this.listname,
+        post('/v2/list', {
+          listName: this.listname,
           // eslint-disable-next-line @typescript-eslint/camelcase
-          board_id: this.board._id
+          boardId: this.board._id
         }).then((res) => {
-          if (res.insertedCount === 1) {
+          if (res.status === 'success') {
             this.getlisttasks()
             this.modalAddList = false
           }
         })
       }
     },
+    updateCard() {
+      if (this.cardData.cardName !== '' && this.cardData.cardDescription !== '') {
+        put(`/v2/cards/${this.cardData._id}`, { cardId: this.cardData._id, cardName: this.cardData.cardName, cardDescription: this.cardData.cardDescription }).then((res) => {
+          this.getlisttasks()
+          this.modalEdit = false
+        })
+      }
+    },
+    removeCard() {
+      del(`/v2/cards/${this.cardData._id}`).then(res => {
+        console.log(res)
+        this.getlisttasks()
+        this.modalEdit = false
+      })
+    },
     getlisttasks() {
-      get(`/v1/board/${this.$route.params.id}/lists`).then((res) => {
-        if (res.error === 'access token is required') {
+      get(`/v2/board/${this.$route.params.id}/lists`).then((res) => {
+        if (res.message === 'authorization token not found' || res.message === 'authorization token not valid') {
           try {
-            post('/v1/auth/refresh-token', {
+            post('/v2/refreshToken', {
             // eslint-disable-next-line @typescript-eslint/camelcase
-              refresh_token: localStorage.getItem('refresh_token')
+              rToken: localStorage.getItem('refresh_token')
             }).then((res) => {
               if (res.refresh_token) {
                 localStorage.setItem('refresh_token', res.refresh_token)
@@ -162,19 +265,29 @@ export default defineComponent({
             this.$router.push('/login')
           }
         }
-        res.push({ test: 'wow' })
-        this.lists = res
+        console.log(res)
+        res.message.push({ cards: [{ place: 'holder' }] })
+        this.lists = res.message
       })
     },
-    createBoard(event: any) {
-      post('/v1/task', {
-        name: this.name,
-        desc: this.description,
-        idList: this.listId
+    removeList(event: any) {
+      del('/v2/list', { listId: this.listId }).then((res) => {
+        console.log(res)
+        this.getlisttasks()
+        this.modalEditList = false
+      })
+    },
+
+    createCard(event: any) {
+      post('/v2/cards', {
+        cardName: this.cardData.cardName,
+        cardDescription: this.cardData.cardDescription,
+        listId: this.listId,
+        boardId: this.board._id
       }).then((res) => {
         console.log(res)
         this.getlisttasks()
-        this.modalAdd = false
+        this.modalAddCard = false
       })
       console.log(this.listId)
     }
@@ -184,7 +297,7 @@ export default defineComponent({
   },
   async mounted() {
     setInterval(refreshToken, 300000)
-    await get(`/v1/board/${this.$route.params.id}`).then((res) => {
+    await get(`/v2/board/${this.$route.params.id}`).then((res) => {
       if (res.status === 'failure') {
         console.error(res.error)
       }
@@ -192,12 +305,12 @@ export default defineComponent({
       this.board = res
     })
 
-    await get(`/v1/board/${this.$route.params.id}/lists`).then((res) => {
-      if (res.error === 'access token is required') {
+    await get(`/v2/board/${this.$route.params.id}/lists`).then((res) => {
+      if (res.message === 'authorization token not found' || res.message === 'authorization token not valid') {
         try {
-          post('/v1/auth/refresh-token', {
+          post('/v2/refreshToken', {
             // eslint-disable-next-line @typescript-eslint/camelcase
-            refresh_token: localStorage.getItem('refresh_token')
+            rToken: localStorage.getItem('refresh_token')
           }).then((res) => {
             if (res.refresh_token) {
               localStorage.setItem('refresh_token', res.refresh_token)
@@ -209,8 +322,13 @@ export default defineComponent({
           this.$router.push('/login')
         }
       }
-      res.push({ test: 'wow' })
-      this.lists = res
+      console.log(res)
+      res.message.push({ place: 'holder' })
+      this.lists = res.message
+    })
+
+    await get(`/v2/board/${this.board._id}/members`).then((res) => {
+      this.boardMembers = res
     })
 
     this.gotdata = true
@@ -225,8 +343,8 @@ html{
   background: #F2F2F2;
 }
 .newList {
-  display: flex;
-  justify-content: center;
+  display: grid;
+  //justify-content: center;
   flex-direction: column;
   height: 100%;
   border: black;
@@ -234,7 +352,7 @@ html{
 .createList {
     align-self: center;
     border: black 0px;
-    width: 40vw;
+    width: 200px;
     height: 5vh;
     text-align: center;
     /* border-style: solid; */
@@ -252,8 +370,10 @@ html{
   color: #FFFFFF;
   padding: 1rem;
 }
+
 .dialogModal {
   width: 60%;
+
 }
 .pagination {
      justify-content: center;
@@ -290,6 +410,31 @@ html{
   flex-direction: column;
   gap: 1rem;
 }
+
+.createBoard{
+display: grid;
+grid-template-columns: repeat(2, 1fr);
+grid-template-rows: repeat(3, 1fr);
+grid-column-gap: 0px;
+grid-row-gap: 0px;
+}
+
+.createBoard .name{
+  grid-area: 1 / 1 / 2 / 3;
+}
+
+.createBoard .remove{
+  grid-area: 3 / 2 / 4 / 3;
+}
+.createBoard .p-button{
+  margin: auto;
+}
+.createBoard .p-inputtext{
+  margin: auto 0 auto 0;
+}
+.createBoard .save { grid-area: 3 / 1 / 4 / 2; }
+.createBoard .desc { grid-area: 2 / 1 / 3 / 3; }
+
 .slider {
   width: 100%;
   overflow: hidden;
@@ -336,6 +481,12 @@ box-shadow: 0px 1px 10px 1px rgba(0,0,0,0.25);
   scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: auto;
+      display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    grid-gap: .5rem;
+    align-items: flex-start;
+    grid-auto-flow: column;
+      grid-auto-columns: minmax(350px, 1fr);
 
   /*
   scroll-snap-points-x: repeat(300px);
@@ -372,6 +523,7 @@ box-shadow: 0px 1px 10px 1px rgba(0,0,0,0.25);
   justify-content: space-between;
   background: white;
   margin-right: 1.5rem;
+  flex-wrap: wrap;
 }
 .slides > div:target {
 /*   transform: scale(0.8); */

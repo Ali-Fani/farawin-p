@@ -64,14 +64,14 @@ export default defineComponent({
   methods: {
     login() {
       this.loading = true
-      post('/v1/auth/login', {
+      post('/v2/login', {
         username: this.username,
         password: this.password
       })
-        .then((res: {status: string; access_token: string; refresh_token: string }) => {
-          if (res.status === 'succes') {
-            localStorage.setItem('access_token', res.access_token)
-            localStorage.setItem('refresh_token', res.refresh_token)
+        .then((res: {status: string; aToken: string; rToken: string }) => {
+          if (res.status === 'success') {
+            localStorage.setItem('access_token', res.aToken)
+            localStorage.setItem('refresh_token', res.rToken)
             this.$router.push({ name: 'Boards' })
             console.log('going next page0')
           } else {
@@ -84,7 +84,7 @@ export default defineComponent({
     },
     register() {
       this.loading = true
-      post('/v1/auth/register', {
+      post('/v2/register', {
         username: this.username,
         password: this.password,
         email: this.email,
